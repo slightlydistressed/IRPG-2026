@@ -246,7 +246,7 @@ export class ChecklistUI{
   }
 
   async importCurrentJson(file){
-    if (!this.current) throw new Error("Please select a checklist first, then import answers for it.");
+    if (!this.current) throw new Error("Please select a checklist before importing answers.");
     const text = await file.text();
     const data = JSON.parse(text);
     if (!data || typeof data !== "object") throw new Error("Not a valid backup file.");

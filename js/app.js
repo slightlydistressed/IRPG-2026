@@ -83,7 +83,7 @@ let activeTocId = null;
 
 function setSplashMsg(msg, sub){ 
   if (UI.splashMsg) UI.splashMsg.textContent = msg; 
-  if (UI.splashSub && sub !== undefined) UI.splashSub.textContent = sub || "";
+  if (UI.splashSub && sub !== undefined) UI.splashSub.textContent = sub !== undefined ? sub : "";
 }
 function hideSplash(){ 
   UI.splash?.classList.add("hidden"); 
@@ -558,13 +558,13 @@ boot().catch((err) => {
       UI.splashMsg.style.color = "#f87171";
       UI.splashMsg.textContent = navigator.onLine
         ? (err?.message || String(err) || "Something went wrong.")
-        : "You appear to be offline. This app must be opened online at least once to cache itself for offline use.";
+        : "You appear to be offline.";
     }
     if (UI.splashSub) {
       UI.splashSub.style.color = "#64748b";
       UI.splashSub.textContent = navigator.onLine
-        ? "Try reloading the page. If the problem continues, check your connection."
-        : "Once cached, the app will work without internet. Visit the site online first, wait for caching to complete, then go offline.";
+        ? "Try reloading the page. If the problem persists, check your connection."
+        : "Open the app online first so it can cache itself. After caching you can use it offline.";
     }
     splash.classList.remove("hidden");
   }

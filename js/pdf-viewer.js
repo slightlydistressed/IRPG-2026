@@ -436,7 +436,11 @@ export class PdfViewer{
     const rects = [];
 
     // Prefer collecting rects from text spans inside the textLayer for accuracy.
-    // This avoids synthetic/collapsed rects that browsers sometimes include in range.getClientRects().
+    // range.getClientRects() can return synthetic/collapsed rects (e.g. a 0-width rect at the
+    // start of the text layer div itself) that end up mapping to the corner of the surface.
+    // Iterating spans that intersect the range gives us only the actual glyph bounding boxes.
+    // If no spans are found (page not yet rendered, or non-text selection), we fall back to
+    // range.getClientRects() — returning null if that also yields no usable rects.
     const textLayer = surface.querySelector(".textLayer");
     if (textLayer) {
       // Walk all spans that fall within the selection range
