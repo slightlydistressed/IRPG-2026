@@ -1,0 +1,17 @@
+{
+  "id": "sizeup-report",
+  "title": "Size-Up Report",
+  "fields": [
+    { "id": "incidentType", "label": "Incident Type", "type": "textarea" },
+    { "id": "locationJurisdiction", "label": "Location / Jurisdiction", "type": "textarea" },
+    { "id": "incidentSize", "label": "Incident Size", "type": "textarea" },
+    { "id": "incidentStatus", "label": "Incident Status", "type": "textarea" },
+    { "id": "establishIC", "label": "Establish IC and Fire Name", "type": "textarea" },
+    { "id": "weatherConditions", "label": "Weather Conditions", "type": "textarea" },
+    { "id": "radioFrequencies", "label": "Radio Frequencies", "type": "textarea" },
+    { "id": "bestAccessRoutes", "label": "Best Access Routes", "type": "textarea" },
+    { "id": "assetsValues", "label": "Assets / Values at Risk", "type": "textarea" },
+    { "id": "specialHazards", "label": "Special Hazards or Concerns", "type": "textarea" },
+    { "id": "additionalResourceNeeds", "label": "Additional Resource Needs", "type": "textarea" }
+  ]
+}
