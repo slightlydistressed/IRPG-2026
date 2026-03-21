@@ -563,3 +563,27 @@ html[data-viewmode="mobile"] .checklist.open{ transform: translateX(0); }
   background: var(--hl);
   border-radius: 4px;
 }
+
+/* --- Boot loading / splash overlay --- */
+.splash{
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg, #0b1220);
+  color: var(--text, #e5e7eb);
+  gap: 12px;
+  text-align: center;
+  padding: 24px;
+  transition: opacity .25s ease;
+}
+.splash.hidden{
+  opacity: 0;
+  pointer-events: none;
+}
+.splashIcon{ font-size: 3rem; }
+.splashTitle{ font-size: 1.4rem; font-weight: 900; }
+.splashMsg{ font-size: 0.9rem; color: var(--muted, #9ca3af); max-width: 320px; line-height: 1.4; }

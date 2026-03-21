@@ -145,6 +145,13 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
+  <!-- Boot loading overlay: shown until app initialises, replaced by error screen on failure. -->
+  <div id="splash" class="splash" aria-live="polite">
+    <div class="splashIcon">🔥</div>
+    <div class="splashTitle">IRPG Offline</div>
+    <div class="splashMsg" id="splashMsg">Loading…</div>
+  </div>
+
   <script type="module" src="./js/app.js"></script>
 </body>
 </html>
