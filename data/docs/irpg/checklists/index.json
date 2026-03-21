@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "groups": [
+    { "id": "command", "title": "Command" },
+    { "id": "weather", "title": "Weather" },
+    { "id": "medical", "title": "Medical" }
+  ],
+  "items": [
+    {
+      "id": "sizeup-report",
+      "title": "Size-Up Report",
+      "group": "command",
+      "path": "data/docs/irpg/checklists/sizeup-report.json"
+    },
+    {
+      "id": "weather",
+      "title": "Weather",
+      "group": "weather",
+      "path": "data/docs/irpg/checklists/weather.json"
+    },
+    {
+      "id": "medical-8line",
+      "title": "Medical Incident Report (8-Line)",
+      "group": "medical",
+      "path": "data/docs/irpg/checklists/medical-8line.json"
+    }
+  ]
+}
