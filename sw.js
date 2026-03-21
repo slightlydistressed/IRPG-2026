@@ -1,8 +1,10 @@
 // IRPG Offline Service Worker
 // - Uses relative URLs so the app can be hosted at / or in a subfolder (e.g., https://intranet/irpg/)
 // - Precaches the "shell" and tries to precache large extras (PDF + PDF.js) without failing install.
+// - Hosted at: https://slightlydistressed.github.io/IRPG-2026/
+//   All paths are relative and resolved against self.registration.scope so they work under any subpath.
 
-const CACHE = "irpg-v3";
+const CACHE = "irpg-v4";
 
 // Small, critical files that should always be available offline.
 const SHELL = [
@@ -18,6 +20,7 @@ const SHELL = [
   "./js/checklist-ui.js",
   "./manifest.webmanifest",
   "./data/documents.json",
+  "./data/toc.json",
   "./data/docs/irpg/manifest.json",
   "./data/docs/irpg/checklists/index.json",
   "./data/docs/irpg/checklists/sizeup-report.json",

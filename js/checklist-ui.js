@@ -185,7 +185,7 @@ export class ChecklistUI{
           this.queueSave();
           toast("Set.");
         } catch (e) {
-          alert(e.message || String(e));
+          toast(e.message || String(e), 4000);
         }
       });
       head.appendChild(btn);

@@ -36,11 +36,21 @@ export class PdfViewer{
       try { return await import(p); } catch { return null; }
     };
 
-    let pdfjs = await tryImport("../vendor/pdf.mjs");
-    let worker = "../vendor/pdf.worker.mjs";
+    // Use import.meta.url to build absolute URLs so that both:
+    //   new Worker(workerSrc, {type:"module"})  — resolved against document origin
+    //   import(workerSrc)                        — resolved against this module's URL
+    // both point to the same correct file under the /IRPG-2026/ subpath.
+    const base = import.meta.url;
+    const pdfUrl    = new URL("../vendor/pdf.mjs",            base).href;
+    const workerUrl = new URL("../vendor/pdf.worker.mjs",     base).href;
+    const pdfFbUrl  = new URL("../vendor/pdfjs/pdf.mjs",      base).href;
+    const workerFbUrl = new URL("../vendor/pdfjs/pdf.worker.mjs", base).href;
+
+    let pdfjs = await tryImport(pdfUrl);
+    let worker = workerUrl;
     if (!pdfjs){
-      pdfjs = await tryImport("../vendor/pdfjs/pdf.mjs");
-      worker = "../vendor/pdfjs/pdf.worker.mjs";
+      pdfjs = await tryImport(pdfFbUrl);
+      worker = workerFbUrl;
     }
     if (!pdfjs){
       throw new Error("PDF.js could not be loaded. Ensure pdf.mjs and pdf.worker.mjs exist in /vendor (or /vendor/pdfjs).");

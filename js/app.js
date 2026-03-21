@@ -58,6 +58,9 @@ const UI = {
 
   btnExportAll: $("#btnExportAll"),
   fileImportAll: $("#fileImportAll"),
+
+  splash: $("#splash"),
+  splashMsg: $("#splashMsg"),
 };
 
 let db, profileId;
@@ -67,6 +70,9 @@ let pdfViewer, tocController, checklistUI;
 let bookmarks = new Set();
 let highlights = [];
 let activeTocId = null;
+
+function setSplashMsg(msg){ if (UI.splashMsg) UI.splashMsg.textContent = msg; }
+function hideSplash(){ UI.splash?.classList.add("hidden"); }
 
 function setTheme(theme){
   document.documentElement.dataset.theme = theme;
@@ -101,7 +107,21 @@ function isDrawerMode(){
 
 async function registerServiceWorker(){
   if (!("serviceWorker" in navigator)) return;
-  try { await navigator.serviceWorker.register("./sw.js"); } catch {}
+  try {
+    const reg = await navigator.serviceWorker.register("./sw.js");
+    // When the service worker becomes active for the first time on this page
+    // (i.e. just installed), notify the user that the app is cached offline.
+    if (reg.installing) {
+      reg.installing.addEventListener("statechange", function onState(){
+        if (this.state === "activated"){
+          toast("✓ App cached – works offline now", 3500);
+          this.removeEventListener("statechange", onState);
+        }
+      });
+    }
+  } catch(e) {
+    console.warn("Service worker registration failed:", e);
+  }
 }
 
 function showLeftTab(which){
@@ -187,12 +207,6 @@ function renderBookmarksList(){
     row.appendChild(right);
     UI.bookmarksList.appendChild(row);
   }
-
-  function escapeHtml(s){
-    return String(s||"").replace(/[&<>"']/g, (m)=>({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-    }[m]));
-  }
 }
 
 async function toggleBookmark(node){
@@ -264,11 +278,14 @@ async function route(){
 }
 
 async function boot(){
+  setSplashMsg("Starting up…");
   await registerServiceWorker();
 
+  setSplashMsg("Opening database…");
   db = await dbInit();
   profileId = await ensureDefaultProfile(db);
 
+  setSplashMsg("Loading document…");
   documents = await loadJson("./data/documents.json");
   const doc = documents[0];
   docManifest = await loadJson(doc.manifestPath);
@@ -295,7 +312,8 @@ async function boot(){
     }
   });
 
-  await pdfViewer.load(docManifest.pdf?.path || "pdf/pms461.pdf");
+  setSplashMsg("Loading PDF…");
+  await pdfViewer.load(docManifest.pdf?.path || "./pdf/pms461.pdf");
 
   // Highlights
   pdfViewer.setHighlights?.(highlights);
@@ -359,7 +377,7 @@ async function boot(){
     hintEl: UI.checklistHint
   });
 
-  await checklistUI.loadIndex("data/docs/irpg/checklists/index.json");
+  await checklistUI.loadIndex("./data/docs/irpg/checklists/index.json");
 
   // Left panel tabs
   UI.tabContents.addEventListener("click", () => showLeftTab("contents"));
@@ -387,7 +405,7 @@ async function boot(){
     const f = e.target.files?.[0];
     if (!f) return;
     try { await checklistUI.importCurrentJson(f); }
-    catch (err) { alert(err.message || String(err)); }
+    catch (err) { toast(err.message || String(err), 4000); }
     finally { UI.fileImportChecklistJson.value = ""; }
   });
 
@@ -427,7 +445,7 @@ async function boot(){
       toast("Imported. Reloading…");
       setTimeout(() => location.reload(), 600);
     } catch (err) {
-      alert(`Import failed: ${err.message || err}`);
+      toast(`Import failed: ${err.message || err}`, 4000);
     } finally {
       UI.fileImportAll.value = "";
     }
@@ -446,24 +464,26 @@ async function boot(){
   }
 
   showLeftTab("contents");
+  hideSplash();
 }
 
 boot().catch((err) => {
   console.error(err);
-  // Show a visible in-page error so the failure is clear even when alerts are suppressed.
-  const el = document.createElement("div");
-  el.style.cssText = "position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0b1220;color:#f87171;font-family:sans-serif;padding:24px;text-align:center;z-index:9999";
-  const title = document.createElement("div");
-  title.style.cssText = "font-size:1.5rem;font-weight:bold;margin-bottom:12px";
-  title.textContent = "⚠ IRPG failed to start";
-  const detail = document.createElement("div");
-  detail.style.cssText = "font-size:0.9rem;color:#94a3b8;max-width:480px";
-  detail.textContent = err?.message || String(err) || "Failed to start.";
-  const hint = document.createElement("div");
-  hint.style.cssText = "margin-top:16px;font-size:0.8rem;color:#64748b";
-  hint.textContent = "Try reloading. If offline, open the app while online first to cache all assets.";
-  el.append(title, detail, hint);
-  document.body.appendChild(el);
+  // Replace splash with a visible error screen so the failure is clear on any device.
+  const splash = UI.splash;
+  if (splash){
+    const icon = splash.querySelector(".splashIcon");
+    if (icon) icon.textContent = "⚠️";
+    if (UI.splashMsg){
+      UI.splashMsg.style.color = "#f87171";
+      UI.splashMsg.textContent = err?.message || String(err) || "Failed to start.";
+    }
+    const hint = document.createElement("div");
+    hint.style.cssText = "margin-top:16px;font-size:0.8rem;color:#64748b;max-width:320px;line-height:1.4";
+    hint.textContent = "Try reloading. If offline, open the app while online first to cache all assets.";
+    splash.appendChild(hint);
+    splash.classList.remove("hidden");
+  }
 });
 
 async function persistHighlights(){
@@ -517,6 +537,12 @@ function renderHighlightsList(){
     row.appendChild(meta);
     list.appendChild(row);
   }
+}
+
+function escapeHtml(s){
+  return String(s||"").replace(/[&<>"']/g, (m)=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[m]));
 }
 
 function slugify(str){
