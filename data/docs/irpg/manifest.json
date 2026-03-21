@@ -1,0 +1,48 @@
+{
+  "docId": "irpg-local",
+  "title": "IRPG Offline",
+  "docVersion": "local",
+  "pdf": {
+    "path": "./pdf/pms461.pdf"
+  },
+  "checklistsIndex": "./data/docs/irpg/checklists/index.json",
+  "toc": [
+    {
+      "id": "operational-leadership",
+      "title": "Operational Leadership",
+      "pageLabel": "v",
+      "sectionKey": "operational-leadership",
+      "children": [
+        {
+          "id": "duty",
+          "title": "DUTY",
+          "pageLabel": "vi"
+        },
+        {
+          "id": "respect",
+          "title": "RESPECT",
+          "pageLabel": "vii"
+        },
+        {
+          "id": "integrity",
+          "title": "INTEGRITY",
+          "pageLabel": "viii"
+        }
+      ]
+    }
+  ],
+  "tocPath": "./data/toc.json",
+  "pageLabelMap": {
+    "roman": {
+      "v": 7,
+      "vi": 8,
+      "vii": 9,
+      "viii": 10,
+      "ix": 11,
+      "x": 12,
+      "xii": 14,
+      "xiii": 15
+    },
+    "numericOffset": 14
+  }
+}
