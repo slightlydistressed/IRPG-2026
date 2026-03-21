@@ -27,10 +27,13 @@ const SHELL = [
 
 // Larger assets. We *try* to cache these during install, but don't block the app if caching fails.
 // They will still be cached on first successful fetch.
+// NOTE: vendor/pdf.worker.mjs is a thin stub that re-exports from vendor/pdfjs/pdf.worker.mjs,
+// so both files must be cached for the worker to function offline.
 const EXTRAS = [
   "./pdf/pms461.pdf",
   "./vendor/pdf.mjs",
   "./vendor/pdf.worker.mjs",
+  "./vendor/pdfjs/pdf.worker.mjs",
   "./icons/Fire_192.png",
   "./icons/Fire_512.png"
 ];

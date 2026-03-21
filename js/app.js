@@ -450,7 +450,20 @@ async function boot(){
 
 boot().catch((err) => {
   console.error(err);
-  alert(err?.message || "Failed to start.");
+  // Show a visible in-page error so the failure is clear even when alerts are suppressed.
+  const el = document.createElement("div");
+  el.style.cssText = "position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0b1220;color:#f87171;font-family:sans-serif;padding:24px;text-align:center;z-index:9999";
+  const title = document.createElement("div");
+  title.style.cssText = "font-size:1.5rem;font-weight:bold;margin-bottom:12px";
+  title.textContent = "⚠ IRPG failed to start";
+  const detail = document.createElement("div");
+  detail.style.cssText = "font-size:0.9rem;color:#94a3b8;max-width:480px";
+  detail.textContent = err?.message || String(err) || "Failed to start.";
+  const hint = document.createElement("div");
+  hint.style.cssText = "margin-top:16px;font-size:0.8rem;color:#64748b";
+  hint.textContent = "Try reloading. If offline, open the app while online first to cache all assets.";
+  el.append(title, detail, hint);
+  document.body.appendChild(el);
 });
 
 async function persistHighlights(){
