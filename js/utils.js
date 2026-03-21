@@ -29,7 +29,10 @@ export function clamp(val, min, max){
   return Math.max(min, Math.min(max, val));
 }
 
-/** Generate a short unique ID with an optional string prefix. */
+/** Generate a unique ID with an optional string prefix. Uses crypto.randomUUID() when available. */
 export function uid(prefix = ""){
-  return `${prefix}${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
+  const uuid = (typeof crypto !== "undefined" && crypto.randomUUID)
+    ? crypto.randomUUID().replace(/-/g, "").slice(0, 12)
+    : `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 9)}`;
+  return `${prefix}${uuid}`;
 }
