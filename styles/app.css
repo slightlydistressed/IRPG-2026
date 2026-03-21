@@ -1,11 +1,17 @@
 :root{
   --topbar-height: 56px;
+  --nav-height: calc(64px + env(safe-area-inset-bottom, 0px));
+
   --bg:#0b1220;
   --panel:#0f172a;
   --panel2:#0c1426;
   --text:#e5e7eb;
   --muted:#b0b8c8;
   --border:#22304f;
+
+  --accent: #f97316;
+  --accentMuted: rgba(249,115,22,.18);
+  --accentBorder: rgba(249,115,22,.40);
 
   --btn:#1f2a44;
   --btnText:#e5e7eb;
@@ -30,6 +36,9 @@
   --btn:#111827;
   --btnText:#ffffff;
 
+  --accentMuted: rgba(249,115,22,.10);
+  --accentBorder: rgba(249,115,22,.40);
+
   --shadow: 0 10px 26px rgba(0,0,0,.12);
   --pageShadow: 0 18px 40px rgba(15,23,42,.12);
 }
@@ -46,6 +55,7 @@ body{
   color: var(--text);
 }
 
+/* ---- Topbar ---- */
 .topbar{
   position: sticky;
   top:0;
@@ -57,6 +67,12 @@ body{
   background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0));
   border-bottom: 1px solid var(--border);
   backdrop-filter: blur(8px);
+  flex-shrink: 0;
+}
+
+/* Hide reader-only topbar elements when not on reader page */
+html:not([data-page="reader"]) .reader-only{
+  display: none !important;
 }
 
 .iconbtn{
@@ -122,14 +138,42 @@ body{
   opacity:1;
 }
 
-.layout{
-  display:flex;
-  flex:1;
-  min-height:0;
+/* ---- App Body / Page System ---- */
+.appBody{
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: var(--nav-height);
+  overflow: hidden;
+}
+
+.navPage{
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ---- Reader Page Layout ---- */
+#readerPage{
   gap: 12px;
   padding: 12px;
 }
 
+/* ---- Single-column pages (Checklists, Saved, Settings) ---- */
+#checklistsPage,
+#savedPage,
+#settingsPage{
+  padding: 12px;
+}
+
+.page-full{
+  flex: 1;
+  min-width: 0;
+}
+
+/* ---- Panel ---- */
 .panel{
   background: var(--panel);
   border: 1px solid var(--border);
@@ -149,6 +193,7 @@ body{
   padding: 10px 12px;
   border-bottom: 1px solid var(--border);
   background: rgba(255,255,255,.02);
+  flex-shrink: 0;
 }
 
 .paneltitle{ font-weight: 900; }
@@ -156,16 +201,18 @@ body{
 .panelfoot{
   border-top: 1px solid var(--border);
   padding: 10px 12px;
+  flex-shrink: 0;
 }
 
 .smallmuted{ font-size:12px; color: var(--muted); }
 
-.toc{ width: 380px; }
+/* Reader page panel sizes */
+.toc{ width: 380px; flex-shrink: 0; }
 .viewer{ flex: 1; }
-.checklist{ width: 420px; }
+
 .panelbody{ min-height:0; }
 
-.searchrow{ padding: 10px 12px; border-bottom: 1px solid var(--border); }
+.searchrow{ padding: 10px 12px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
 .searchrow.inner{ border-bottom: 0; padding-top: 8px; padding-bottom: 0; }
 .search{
   width:100%;
@@ -196,13 +243,19 @@ body{
   opacity:.8;
   min-height: 44px;
 }
-.tab.active{ background: rgba(255,255,255,.12); opacity:1; }
+.tab.active{
+  background: var(--accentMuted);
+  color: var(--accent);
+  opacity:1;
+  border: 1px solid var(--accentBorder);
+}
 
 .scrollcol{
   flex:1;
   overflow:hidden;
   display:flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 .view{
@@ -225,7 +278,7 @@ body{
   background: rgba(255,255,255,.04);
 }
 .row:hover{ background: rgba(255,255,255,.06); }
-.row.active{ outline: 2px solid rgba(255,255,255,.14); }
+.row.active{ outline: 2px solid var(--accentBorder); }
 
 .rowMain{
   flex:1;
@@ -259,6 +312,7 @@ body{
 .bmBtn[data-on="false"]{ color: rgba(255,255,255,.65); }
 .chev{ opacity:.55; font-size:20px; line-height:1; }
 
+/* ---- Viewer (Reader Page) ---- */
 .viewerhead{
   display:flex;
   align-items:center;
@@ -267,6 +321,7 @@ body{
   padding: 10px 12px;
   border-bottom: 1px solid var(--border);
   background: rgba(255,255,255,.02);
+  flex-shrink: 0;
 }
 .viewerleft{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
 .viewerright{ display:flex; align-items:center; gap:10px; }
@@ -278,29 +333,129 @@ body{
   overflow:auto;
   padding: 14px;
   background: rgba(0,0,0,.08);
+  scroll-behavior: smooth;
 }
 
 .pdfPage{
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  background: rgba(255,255,255,.03);
-  margin: 0 auto 14px auto;
-  width: min(980px, 100%);
-  overflow:hidden;
+  margin: 0 auto 16px auto;
+  width: fit-content;
+  max-width: 100%;
   position: relative;
 }
 
-.pdfCanvas{ display:block; width:100%; height:auto; }
+.pageFrame{
+  position: relative;
+  border-radius: 18px;
+  background: rgba(255,255,255,.02);
+  border: 1px solid var(--border);
+  box-shadow: var(--pageShadow);
+  overflow:hidden;
+}
 
-.pdfPlaceholder{
+.pagePlaceholder{
+  height: 100%;
   display:flex;
   align-items:center;
   justify-content:center;
-  color: var(--muted);
-  font-size: 13px;
-  height: 200px;
+  color: rgba(255,255,255,.28);
+  font-weight: 800;
+  letter-spacing: .4px;
+  user-select: none;
 }
 
+.pageBadge{
+  position:absolute;
+  top: 10px;
+  left: 12px;
+  z-index: 5;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(0,0,0,.30);
+  color: rgba(255,255,255,.92);
+  font-size: 12px;
+  font-weight: 800;
+  backdrop-filter: blur(6px);
+}
+
+.pageSurface{
+  position: relative;
+  overflow:hidden;
+  background: var(--pageBg);
+}
+
+.pdfCanvas{
+  display:block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ---- Text Layer (PDF.js 5.x) ---- */
+.textLayer{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  opacity: 1;
+  line-height: 1;
+  pointer-events: auto;
+  user-select: text;
+  -webkit-user-select: text;
+
+  --user-unit: 1;
+  --total-scale-factor: calc(var(--scale-factor) * var(--user-unit));
+  --scale-round-x: 1px;
+  --scale-round-y: 1px;
+
+  --min-font-size: 1;
+  --text-scale-factor: calc(var(--total-scale-factor) * var(--min-font-size));
+  --min-font-size-inv: calc(1 / var(--min-font-size));
+}
+
+.textLayer :is(span, br){
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+  position:absolute;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0% 0%;
+  pointer-events: auto;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.textLayer > :not(.markedContent),
+.textLayer .markedContent span:not(.markedContent){
+  z-index: 1;
+  --font-height: 0;
+  font-size: calc(var(--text-scale-factor) * var(--font-height));
+  --scale-x: 1;
+  --rotate: 0deg;
+  transform: rotate(var(--rotate)) scaleX(var(--scale-x)) scale(var(--min-font-size-inv));
+}
+
+.textLayer .markedContent{
+  display: contents;
+}
+
+.textLayer ::selection{
+  background: rgba(96,165,250,.35);
+}
+
+.highlightLayer{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+
+.hlRect{
+  position:absolute;
+  background: var(--hl);
+  border-radius: 4px;
+}
+
+/* ---- Misc Components ---- */
 .emptyNote{
   padding: 14px 12px;
   border-radius: 16px;
@@ -391,10 +546,11 @@ body{
   align-items:center;
 }
 
+/* ---- Toast ---- */
 .toast{
   position: fixed;
   left: 50%;
-  bottom: 18px;
+  bottom: calc(var(--nav-height) + 12px);
   transform: translateX(-50%);
   background: rgba(0,0,0,.85);
   color: white;
@@ -408,57 +564,136 @@ body{
 }
 .toast.show{ opacity: 1; }
 
-/* Focus mode: hide side panels */
-body.focus .toc,
-body.focus .checklist{ display:none; }
-body.focus .viewer{ flex:1; }
+/* ---- Focus mode (reader page) ---- */
+body.focus #readerPage .toc{ display:none; }
+body.focus #readerPage .viewer{ flex:1; }
 
-/* Viewmode forcing */
-html[data-viewmode="mobile"] .toc,
-html[data-viewmode="mobile"] .checklist{
+/* ---- Bottom Navigation ---- */
+.bottomNav{
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--nav-height);
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: stretch;
+  z-index: 20;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.navBtn{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 8px 4px;
+  transition: color .15s ease;
+  min-height: 44px;
+  position: relative;
+}
+.navBtn::before{
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 0 0 2px 2px;
+  transition: width .2s ease;
+}
+.navBtn:hover{ color: var(--text); }
+.navBtn.active{
+  color: var(--accent);
+}
+.navBtn.active::before{
+  width: 40px;
+}
+.navIcon{ font-size: 20px; line-height: 1; }
+.navLabel{ font-size: 11px; font-weight: 700; }
+
+/* ---- Settings Page ---- */
+.settingsGroup{
+  margin-bottom: 24px;
+}
+.settingsGroupTitle{
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+  padding: 0 2px;
+}
+.settingsRow{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.07);
+  background: rgba(255,255,255,.03);
+  margin-bottom: 8px;
+}
+[data-theme="light"] .settingsRow{
+  background: rgba(0,0,0,.02);
+  border-color: rgba(0,0,0,.07);
+}
+.settingsLabel{
+  font-weight: 700;
+  font-size: 14px;
+}
+.settingsAbout{
+  text-align: center;
+  padding: 24px 12px 12px;
+}
+.settingsAboutIcon{ font-size: 2.5rem; margin-bottom: 8px; }
+.settingsAboutTitle{ font-weight: 900; font-size: 18px; margin-bottom: 4px; }
+.settingsAboutSub{ font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+.settingsAboutNote{ font-size: 12px; color: var(--muted); max-width: 280px; margin: 0 auto; line-height: 1.5; }
+
+/* ---- TOC Drawer (mobile/tablet) ---- */
+html[data-viewmode="mobile"] .toc{
   position: fixed;
   top: var(--topbar-height);
-  bottom: 0;
+  bottom: var(--nav-height);
   height: auto;
   z-index: 50;
   width: min(420px, calc(100vw - 16px));
+  left: 8px;
   box-shadow: var(--shadow);
   transform: translateX(-110%);
   transition: transform .2s ease;
 }
-html[data-viewmode="mobile"] .toc{ left: 8px; }
-html[data-viewmode="mobile"] .checklist{
-  left:auto;
-  right: 8px;
-  transform: translateX(110%);
-}
 html[data-viewmode="mobile"] .toc.open{ transform: translateX(0); }
-html[data-viewmode="mobile"] .checklist.open{ transform: translateX(0); }
 
 @media (max-width: 980px){
-  html[data-viewmode="auto"] .toc,
-  html[data-viewmode="auto"] .checklist{
+  html[data-viewmode="auto"] .toc{
     position: fixed;
     top: var(--topbar-height);
-    bottom: 0;
+    bottom: var(--nav-height);
     height: auto;
     z-index: 50;
     width: min(420px, calc(100vw - 16px));
+    left: 8px;
     box-shadow: var(--shadow);
     transform: translateX(-110%);
     transition: transform .2s ease;
   }
-  html[data-viewmode="auto"] .toc{ left: 8px; }
-  html[data-viewmode="auto"] .checklist{
-    left:auto;
-    right: 8px;
-    transform: translateX(110%);
-  }
   html[data-viewmode="auto"] .toc.open{ transform: translateX(0); }
-  html[data-viewmode="auto"] .checklist.open{ transform: translateX(0); }
 }
 
-/* Scrollbar visibility */
+/* ---- Scrollbar ---- */
 .view::-webkit-scrollbar{ width: 12px; }
 .view::-webkit-scrollbar-thumb{
   background: rgba(255,255,255,.18);
@@ -468,139 +703,33 @@ html[data-viewmode="mobile"] .checklist.open{ transform: translateX(0); }
 }
 .view::-webkit-scrollbar-track{ background: transparent; }
 
+/* ---- Backdrop ---- */
+.drawerBackdrop{
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(0,0,0,.45);
+  backdrop-filter: blur(2px);
+}
+.drawerBackdrop.active{ display: block; }
 
-/* --- PDF.js viewer layers (from Build A baseline) --- */
-.pdfScroll{
-  flex:1;
-  overflow:auto;
-  padding: 14px;
-  scroll-behavior: smooth;
+/* ---- Autosave ---- */
+.saveStatus{
+  min-height: 1.2em;
+  padding-top: 6px;
+  transition: opacity .3s ease;
+}
+@keyframes fadeOut{
+  0%{ opacity: 1; }
+  70%{ opacity: 1; }
+  100%{ opacity: 0; }
+}
+.saveStatus.saved{
+  animation: fadeOut 2.5s ease forwards;
 }
 
-.pdfPage{
-  margin: 0 auto 16px auto;
-  width: fit-content;
-  max-width: 100%;
-  position: relative;
-}
-
-.pageFrame{
-  position: relative;
-  border-radius: 18px;
-  background: rgba(255,255,255,.02);
-  border: 1px solid var(--border);
-  box-shadow: var(--pageShadow);
-  overflow:hidden; /* critical for clipping text layer */
-}
-
-.pagePlaceholder{
-  height: 100%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color: rgba(255,255,255,.28);
-  font-weight: 800;
-  letter-spacing: .4px;
-  user-select: none;
-}
-
-.pageBadge{
-  position:absolute;
-  top: 10px;
-  left: 12px;
-  z-index: 5;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: rgba(0,0,0,.30);
-  color: rgba(255,255,255,.92);
-  font-size: 12px;
-  font-weight: 800;
-  backdrop-filter: blur(6px);
-}
-
-.pageSurface{
-  position: relative;
-  overflow:hidden; /* critical */
-  background: var(--pageBg);
-}
-
-.pdfCanvas{
-  display:block;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  user-select: none;
-}
-
-.textLayer{
-  position:absolute;
-  inset:0;
-  overflow:hidden;
-  opacity: 1;
-  line-height: 1;
-  pointer-events: auto;
-  user-select: text;
-  -webkit-user-select: text;
-
-  /* required by pdf.js TextLayer sizing helpers */
-  --user-unit: 1;
-  --total-scale-factor: calc(var(--scale-factor) * var(--user-unit));
-  --scale-round-x: 1px;
-  --scale-round-y: 1px;
-
-  /* pdf.js 5.x: min-font-size scaling variables */
-  --min-font-size: 1;
-  --text-scale-factor: calc(var(--total-scale-factor) * var(--min-font-size));
-  --min-font-size-inv: calc(1 / var(--min-font-size));
-}
-
-/* pdf.js 5.x: base styles for all span and br elements in text layer */
-.textLayer :is(span, br){
-  color: transparent !important;
-  -webkit-text-fill-color: transparent !important;
-  position:absolute;
-  white-space: pre;
-  cursor: text;
-  transform-origin: 0% 0%;
-  pointer-events: auto;
-  user-select: text;
-  -webkit-user-select: text;
-}
-
-/* pdf.js 5.x: font-size and transform for actual text items */
-.textLayer > :not(.markedContent),
-.textLayer .markedContent span:not(.markedContent){
-  z-index: 1;
-  --font-height: 0;
-  font-size: calc(var(--text-scale-factor) * var(--font-height));
-  --scale-x: 1;
-  --rotate: 0deg;
-  transform: rotate(var(--rotate)) scaleX(var(--scale-x)) scale(var(--min-font-size-inv));
-}
-
-/* pdf.js 5.x: markedContent containers have no layout box of their own */
-.textLayer .markedContent{
-  display: contents;
-}
-
-.textLayer ::selection{
-  background: rgba(96,165,250,.35);
-}
-
-.highlightLayer{
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-}
-
-.hlRect{
-  position:absolute;
-  background: var(--hl);
-  border-radius: 4px;
-}
-
-/* --- Boot loading / splash overlay --- */
+/* ---- Splash ---- */
 .splash{
   position: fixed;
   inset: 0;
@@ -625,7 +754,6 @@ html[data-viewmode="mobile"] .checklist.open{ transform: translateX(0); }
 .splashMsg{ font-size: 0.9rem; color: var(--muted, #b0b8c8); max-width: 320px; line-height: 1.4; }
 .splashSub{ font-size: 0.75rem; color: var(--muted, #b0b8c8); opacity: .7; max-width: 320px; line-height: 1.4; min-height: 1em; }
 
-/* Spinner shown during loading */
 @keyframes spin{ to{ transform: rotate(360deg); } }
 .splashSpinner{
   width: 28px;
@@ -638,7 +766,7 @@ html[data-viewmode="mobile"] .checklist.open{ transform: translateX(0); }
 }
 .splash.error .splashSpinner{ display: none; }
 
-/* Offline status badge in topbar */
+/* ---- Offline Badge ---- */
 .offlineBadge{
   font-size: 11px;
   font-weight: 800;
@@ -673,43 +801,14 @@ html[data-viewmode="mobile"] .checklist.open{ transform: translateX(0); }
 [data-theme="light"] .offlineBadge.update{ background: rgba(37,99,235,.10); border-color: rgba(37,99,235,.35); color: #1d4ed8; }
 [data-theme="light"] .offlineBadge.offline{ background: rgba(220,38,38,.08); border-color: rgba(220,38,38,.30); color: #b91c1c; }
 
-/* Mobile drawer backdrop */
-.drawerBackdrop{
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 40;
-  background: rgba(0,0,0,.45);
-  backdrop-filter: blur(2px);
-}
-.drawerBackdrop.active{ display: block; }
-
-/* Checklist save status */
-.saveStatus{
-  min-height: 1.2em;
-  padding-top: 6px;
-  transition: opacity .3s ease;
-}
-
-/* Autosave fade-out */
-@keyframes fadeOut{
-  0%{ opacity: 1; }
-  70%{ opacity: 1; }
-  100%{ opacity: 0; }
-}
-.saveStatus.saved{
-  animation: fadeOut 2.5s ease forwards;
-}
-
-/* Improve view mode seg on small screens */
-@media (max-width: 600px){
-  .viewmodeseg{ display: none; }
-  .topbar-actions .pill[style]{ display: none; }
-}
-
-/* Visible focus ring for keyboard accessibility */
+/* ---- Focus ring ---- */
 :focus-visible{
-  outline: 2px solid rgba(96,165,250,.7);
+  outline: 2px solid rgba(249,115,22,.7);
   outline-offset: 2px;
 }
 button:focus:not(:focus-visible){ outline: none; }
+
+/* ---- Small screen tweaks ---- */
+@media (max-width: 600px){
+  .topbar-actions .seg{ display: none; }
+}

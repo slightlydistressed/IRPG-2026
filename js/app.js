@@ -15,33 +15,34 @@ const UI = {
   appTitle: $("#appTitle"),
   appSubtitle: $("#appSubtitle"),
 
+  // Pages
+  readerPage: $("#readerPage"),
+  checklistsPage: $("#checklistsPage"),
+  savedPage: $("#savedPage"),
+  settingsPage: $("#settingsPage"),
+
+  // Topbar
   btnToc: $("#btnToc"),
   btnCloseToc: $("#btnCloseToc"),
   tocPanel: $("#tocPanel"),
+  btnFocus: $("#btnFocus"),
+  btnTheme: $("#btnTheme"),
+  offlineStatus: $("#offlineStatus"),
+  drawerBackdrop: $("#drawerBackdrop"),
 
-  tabContents: $("#tabContents"),
-  tabBookmarks: $("#tabBookmarks"),
-  tabHighlights: $("#tabHighlights"),
-  tocView: $("#tocView"),
-  bookmarksView: $("#bookmarksView"),
-  highlightsView: $("#highlightsView"),
-  highlightsList: $("#highlightsList"),
-
+  // TOC (reader page)
   tocTree: $("#tocTree"),
   tocSearch: $("#tocSearch"),
 
-  bookmarksList: $("#bookmarksList"),
-  bookmarksSearch: $("#bookmarksSearch"),
-
+  // PDF viewer (reader page)
   btnPrev: $("#btnPrev"),
   btnNext: $("#btnNext"),
   pageReadout: $("#pageReadout"),
   pdfScroll: $("#pdfScroll"),
+  btnGoChecklists: $("#btnGoChecklists"),
 
-  btnChecklist: $("#btnChecklist"),
+  // Checklists page
   checklistPanel: $("#checklistPanel"),
-  btnCloseChecklist: $("#btnCloseChecklist"),
-
   checklistHint: $("#checklistHint"),
   checklistSearch: $("#checklistSearch"),
   checklistCatalog: $("#checklistCatalog"),
@@ -49,28 +50,35 @@ const UI = {
   checklistForm: $("#checklistForm"),
   checklistTitle: $("#checklistTitle"),
   btnChecklistBack: $("#btnChecklistBack"),
-
   btnResetChecklist: $("#btnResetChecklist"),
   btnExportChecklistWord: $("#btnExportChecklistWord"),
   btnExportChecklistJson: $("#btnExportChecklistJson"),
   fileImportChecklistJson: $("#fileImportChecklistJson"),
+  checklistSaveStatus: $("#checklistSaveStatus"),
 
-  btnTheme: $("#btnTheme"),
-  btnFocus: $("#btnFocus"),
+  // Saved page
+  tabBookmarks: $("#tabBookmarks"),
+  tabHighlights: $("#tabHighlights"),
+  bookmarksView: $("#bookmarksView"),
+  highlightsView: $("#highlightsView"),
+  bookmarksList: $("#bookmarksList"),
+  highlightsList: $("#highlightsList"),
+  bookmarksSearch: $("#bookmarksSearch"),
 
+  // Settings page
   viewAuto: $("#viewAuto"),
   viewMobile: $("#viewMobile"),
   viewDesktop: $("#viewDesktop"),
-
   btnExportAll: $("#btnExportAll"),
   fileImportAll: $("#fileImportAll"),
+  btnThemeSettings: $("#btnThemeSettings"),
+  settingsDocTitle: $("#settingsDocTitle"),
+  settingsDocVersion: $("#settingsDocVersion"),
 
+  // Splash
   splash: $("#splash"),
   splashMsg: $("#splashMsg"),
   splashSub: $("#splashSub"),
-  offlineStatus: $("#offlineStatus"),
-  drawerBackdrop: $("#drawerBackdrop"),
-  checklistSaveStatus: $("#checklistSaveStatus"),
 };
 
 let db, profileId;
@@ -81,17 +89,47 @@ let bookmarks = new Set();
 let highlights = [];
 let activeTocId = null;
 
-function setSplashMsg(msg, sub){ 
-  if (UI.splashMsg) UI.splashMsg.textContent = msg; 
-  if (UI.splashSub && sub !== undefined) UI.splashSub.textContent = sub !== undefined ? sub : "";
-}
-function hideSplash(){ 
-  UI.splash?.classList.add("hidden"); 
+// ---- Page Navigation ----
+function showPage(name){
+  const pages = {
+    reader:     UI.readerPage,
+    checklists: UI.checklistsPage,
+    saved:      UI.savedPage,
+    settings:   UI.settingsPage,
+  };
+  for (const [key, el] of Object.entries(pages)){
+    if (el) el.classList.toggle("hidden", key !== name);
+  }
+  document.querySelectorAll(".navBtn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.page === name);
+  });
+  document.documentElement.dataset.page = name;
+  // Close TOC drawer when leaving reader page
+  if (name !== "reader") toggleDrawer(UI.tocPanel, false);
 }
 
+function showSavedTab(which){
+  UI.bookmarksView.classList.toggle("hidden", which !== "bookmarks");
+  UI.highlightsView.classList.toggle("hidden", which !== "highlights");
+  UI.tabBookmarks.classList.toggle("active", which === "bookmarks");
+  UI.tabHighlights.classList.toggle("active", which === "highlights");
+}
+
+// ---- Splash ----
+function setSplashMsg(msg, sub){
+  if (UI.splashMsg) UI.splashMsg.textContent = msg;
+  if (UI.splashSub && sub !== undefined) UI.splashSub.textContent = sub !== undefined ? sub : "";
+}
+function hideSplash(){
+  UI.splash?.classList.add("hidden");
+}
+
+// ---- Theme ----
 function setTheme(theme){
   document.documentElement.dataset.theme = theme;
-  UI.btnTheme.textContent = theme === "light" ? "Light" : "Dark";
+  const label = theme === "light" ? "Light" : "Dark";
+  if (UI.btnTheme) UI.btnTheme.textContent = label;
+  if (UI.btnThemeSettings) UI.btnThemeSettings.textContent = label;
 }
 
 function syncTopbarHeight(){
@@ -100,6 +138,7 @@ function syncTopbarHeight(){
   document.documentElement.style.setProperty("--topbar-height", `${height}px`);
 }
 
+// ---- View Mode ----
 function setViewMode(mode){
   document.documentElement.dataset.viewmode = mode;
   UI.viewAuto.classList.toggle("active", mode === "auto");
@@ -107,15 +146,15 @@ function setViewMode(mode){
   UI.viewDesktop.classList.toggle("active", mode === "desktop");
 }
 
+// ---- Drawer ----
 function toggleDrawer(el, open){
   if (!el) return;
   if (open) el.classList.add("open");
   else el.classList.remove("open");
-  // Show/hide backdrop when any drawer is open in drawer mode
   if (isDrawerMode()){
-    const anyOpen = UI.tocPanel?.classList.contains("open") || UI.checklistPanel?.classList.contains("open");
-    if (UI.drawerBackdrop) {
-      UI.drawerBackdrop.classList.toggle("active", anyOpen);
+    const anyOpen = UI.tocPanel?.classList.contains("open");
+    if (UI.drawerBackdrop){
+      UI.drawerBackdrop.classList.toggle("active", !!anyOpen);
       UI.drawerBackdrop.setAttribute("aria-hidden", String(!anyOpen));
     }
   }
@@ -128,6 +167,7 @@ function isDrawerMode(){
   return window.matchMedia("(max-width: 980px)").matches;
 }
 
+// ---- Offline status ----
 function setOfflineStatus(state, label){
   const el = UI.offlineStatus;
   if (!el) return;
@@ -141,8 +181,7 @@ async function registerServiceWorker(){
   if (!("serviceWorker" in navigator)) return;
   try {
     const reg = await navigator.serviceWorker.register("./sw.js");
-
-    if (reg.installing) {
+    if (reg.installing){
       setOfflineStatus("caching", "⏳ Caching for offline…");
       reg.installing.addEventListener("statechange", function onState(){
         if (this.state === "activated"){
@@ -151,14 +190,9 @@ async function registerServiceWorker(){
           this.removeEventListener("statechange", onState);
         }
       });
-    } else if (reg.active) {
-      // Already installed – mark as ready if online, show appropriate state
-      if (navigator.onLine) {
-        setOfflineStatus("ready", "✓ Offline ready");
-      }
+    } else if (reg.active){
+      if (navigator.onLine) setOfflineStatus("ready", "✓ Offline ready");
     }
-
-    // Detect when an update is waiting to install
     reg.addEventListener("updatefound", () => {
       const newWorker = reg.installing;
       if (!newWorker) return;
@@ -170,7 +204,7 @@ async function registerServiceWorker(){
         }
       });
     });
-  } catch(e) {
+  } catch(e){
     console.warn("Service worker registration failed:", e);
   }
 }
@@ -179,29 +213,16 @@ function initNetworkStatus(){
   function update(){
     if (!navigator.onLine){
       setOfflineStatus("offline", "⚠ Offline");
-    }
-    // If online and status was "offline", restore to ready state
-    // (only clear the offline warning; leave caching/update states alone)
-    else if (UI.offlineStatus?.classList.contains("offline")){
+    } else if (UI.offlineStatus?.classList.contains("offline")){
       setOfflineStatus("ready", "✓ Offline ready");
     }
   }
   window.addEventListener("online",  update);
   window.addEventListener("offline", update);
-  // Set initial offline state if offline
   if (!navigator.onLine) setOfflineStatus("offline", "⚠ Offline – using cached version");
 }
 
-function showLeftTab(which){
-  UI.tocView.classList.toggle("hidden", which !== "contents");
-  UI.bookmarksView.classList.toggle("hidden", which !== "bookmarks");
-  UI.highlightsView.classList.toggle("hidden", which !== "highlights");
-
-  UI.tabContents.classList.toggle("active", which === "contents");
-  UI.tabBookmarks.classList.toggle("active", which === "bookmarks");
-  UI.tabHighlights.classList.toggle("active", which === "highlights");
-}
-
+// ---- Bookmarks ----
 async function persistBookmarks(){
   await setDocState(db, profileId, docManifest.docId, { bookmarks: Array.from(bookmarks) });
 }
@@ -210,8 +231,7 @@ function renderBookmarksList(){
   const q = String(UI.bookmarksSearch.value || "").trim().toLowerCase();
   UI.bookmarksList.innerHTML = "";
 
-  const ids = Array.from(bookmarks);
-  if (!ids.length){
+  if (!bookmarks.size){
     const empty = document.createElement("div");
     empty.className = "emptyNote";
     empty.textContent = "No bookmarks yet. Tap 🔖 in Contents to save one.";
@@ -242,7 +262,8 @@ function renderBookmarksList(){
       <div class="rowSub">${node.pageLabel ? `Page ${escapeHtml(String(node.pageLabel))}` : ""}</div>
     `;
     main.addEventListener("click", async () => {
-      if (isDrawerMode()) toggleDrawer(UI.tocPanel, false);
+      showPage("reader");
+      toggleDrawer(UI.tocPanel, false);
       await handleTocSelect(node);
     });
 
@@ -270,7 +291,6 @@ function renderBookmarksList(){
 
     right.appendChild(bmBtn);
     right.appendChild(chev);
-
     row.appendChild(main);
     row.appendChild(right);
     UI.bookmarksList.appendChild(row);
@@ -280,36 +300,31 @@ function renderBookmarksList(){
 async function toggleBookmark(node){
   if (bookmarks.has(node.id)) bookmarks.delete(node.id);
   else bookmarks.add(node.id);
-
   await persistBookmarks();
   tocController?.setBookmarks(bookmarks);
   renderBookmarksList();
   toast(bookmarks.has(node.id) ? "Bookmarked." : "Bookmark removed.");
 }
 
+// ---- Page label resolution ----
 function pageIndexFromPageLabel(pageLabel){
   if (!pageLabel) return null;
-
   let raw = String(pageLabel).trim();
   raw = raw.replace(/^pages?\s+/i, "").trim();
   raw = raw.split(/[–-]/)[0].trim();
   if (!raw) return null;
-
   const lower = raw.toLowerCase();
   const map = docManifest?.pageLabelMap;
-
   if (map?.roman && Object.prototype.hasOwnProperty.call(map.roman, lower)){
     const idx = Number(map.roman[lower]);
     return Number.isFinite(idx) ? idx : null;
   }
-
   const n = Number(raw);
   if (Number.isInteger(n)){
     const off = Number(map?.numericOffset);
     if (Number.isFinite(off)) return n + off;
     return n - 1;
   }
-
   return null;
 }
 
@@ -317,7 +332,6 @@ async function handleTocSelect(node){
   activeTocId = node.id;
   tocController?.setActive(node.id);
 
-  // Jump to page
   let target = null;
   if (Number.isFinite(node.pdfPageIndex)) target = node.pdfPageIndex;
   if (target === null && Number.isFinite(node.pdfPage)) target = Number(node.pdfPage) - 1;
@@ -331,9 +345,9 @@ async function handleTocSelect(node){
     await setDocState(db, profileId, docManifest.docId, { lastTocId: node.id });
   }
 
-  // If TOC node references a checklistId, open that checklist
+  // If TOC node references a checklistId, navigate to checklists page
   if (node.checklistId){
-    toggleDrawer(UI.checklistPanel, true);
+    showPage("checklists");
     checklistUI?.openChecklist(node.checklistId).catch(()=>{});
   }
 }
@@ -345,12 +359,70 @@ async function route(){
   }
 }
 
+// ---- Highlights ----
+async function persistHighlights(){
+  await setDocState(db, profileId, docManifest.docId, { highlights });
+}
+
+function renderHighlightsList(){
+  const list = UI.highlightsList;
+  if (!list) return;
+  list.innerHTML = "";
+  if (!highlights?.length){
+    const empty = document.createElement("div");
+    empty.className = "emptyNote";
+    empty.textContent = "No highlights yet. Drag-select text in the PDF to highlight.";
+    list.appendChild(empty);
+    return;
+  }
+
+  const sorted = [...highlights].sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
+  for (const h of sorted){
+    const row = document.createElement("div");
+    row.className = "row";
+
+    const main = document.createElement("button");
+    main.className = "rowMain";
+    main.type = "button";
+    main.innerHTML = `<div class="rowTitle">PDF ${Number(h.pageIndex)+1}</div><div class="rowSub">${escapeHtml((h.text||"").slice(0,140))}</div>`;
+    main.addEventListener("click", async () => {
+      showPage("reader");
+      await pdfViewer?.goToHighlight?.(h);
+    });
+
+    const meta = document.createElement("div");
+    meta.className = "rowRight";
+
+    const del = document.createElement("button");
+    del.className = "bmBtn";
+    del.type = "button";
+    del.title = "Delete highlight";
+    del.innerHTML = "🗑️";
+    del.addEventListener("click", async (e) => {
+      e.preventDefault(); e.stopPropagation();
+      highlights = highlights.filter(x => x.id !== h.id);
+      await persistHighlights();
+      pdfViewer?.setHighlights?.(highlights);
+      renderHighlightsList();
+    });
+
+    meta.appendChild(del);
+    row.appendChild(main);
+    row.appendChild(meta);
+    list.appendChild(row);
+  }
+}
+
+function slugify(str){
+  return String(str||"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"") || "x";
+}
+
+// ---- Boot ----
 async function boot(){
   setSplashMsg("Starting up…", "Opening local database");
   await registerServiceWorker();
   initNetworkStatus();
 
-  setSplashMsg("Starting up…", "Opening local database");
   db = await dbInit();
   profileId = await ensureDefaultProfile(db);
 
@@ -361,6 +433,8 @@ async function boot(){
 
   UI.appTitle.textContent = docManifest.title || "IRPG Offline";
   UI.appSubtitle.textContent = docManifest.docVersion ? `Version ${docManifest.docVersion}` : "Version local";
+  if (UI.settingsDocTitle) UI.settingsDocTitle.textContent = docManifest.title || "IRPG Offline";
+  if (UI.settingsDocVersion) UI.settingsDocVersion.textContent = docManifest.docVersion ? `Version ${docManifest.docVersion}` : "Version local";
 
   const st = await getDocState(db, profileId, docManifest.docId);
   setTheme(st?.theme || "dark");
@@ -372,7 +446,7 @@ async function boot(){
   syncTopbarHeight();
   window.addEventListener("resize", syncTopbarHeight, { passive: true });
 
-  // PDF
+  // PDF Viewer
   pdfViewer = new PdfViewer({
     scrollEl: UI.pdfScroll,
     pageReadoutEl: UI.pageReadout,
@@ -384,10 +458,10 @@ async function boot(){
   setSplashMsg("Loading PDF…", "This may take a moment on first load");
   await pdfViewer.load(docManifest.pdf?.path || "./pdf/pms461.pdf");
 
-  // Highlights
   pdfViewer.setHighlights?.(highlights);
   renderHighlightsList();
 
+  // Capture highlights on text selection
   const onSel = async () => {
     const h = pdfViewer.captureSelectionHighlight?.();
     if (!h) return;
@@ -400,7 +474,7 @@ async function boot(){
   UI.pdfScroll?.addEventListener("mouseup", () => setTimeout(onSel, 0));
   UI.pdfScroll?.addEventListener("touchend", () => setTimeout(onSel, 50));
 
-  // If manifest provides tocPath (group format), load and convert to tree
+  // Load TOC from manifest
   if (docManifest.tocPath){
     try {
       const tocData = await loadJson(docManifest.tocPath);
@@ -419,10 +493,10 @@ async function boot(){
         }));
         docManifest.pageLabelMap = docManifest.pageLabelMap || {"roman": {"v": 7, "vi": 8, "vii": 9, "viii": 10, "ix": 11, "x": 12, "xii": 14, "xiii": 15}, "numericOffset": 14};
       }
-    } catch(e) {}
+    } catch(e){}
   }
 
-  // TOC
+  // TOC controller
   tocController = renderToc({
     rootEl: UI.tocTree,
     toc: docManifest.toc || [],
@@ -447,34 +521,54 @@ async function boot(){
     hintEl: UI.checklistHint,
     saveStatusEl: UI.checklistSaveStatus,
   });
-
   await checklistUI.loadIndex("./data/docs/irpg/checklists/index.json");
 
-  // Left panel tabs
-  UI.tabContents.addEventListener("click", () => showLeftTab("contents"));
-  UI.tabBookmarks.addEventListener("click", () => { showLeftTab("bookmarks"); renderBookmarksList(); });
-  UI.tabHighlights.addEventListener("click", () => showLeftTab("highlights"));
+  // ---- Wire up events ----
 
-  UI.bookmarksSearch.addEventListener("input", renderBookmarksList);
+  // Bottom navigation
+  document.querySelectorAll(".navBtn").forEach(btn => {
+    btn.addEventListener("click", () => showPage(btn.dataset.page));
+  });
 
-  // Buttons
-  UI.btnPrev.addEventListener("click", () => pdfViewer.prev());
-  UI.btnNext.addEventListener("click", () => pdfViewer.next());
+  // Saved page tabs
+  UI.tabBookmarks.addEventListener("click", () => { showSavedTab("bookmarks"); renderBookmarksList(); });
+  UI.tabHighlights.addEventListener("click", () => showSavedTab("highlights"));
 
+  // Reader topbar
   UI.btnToc.addEventListener("click", () => toggleDrawer(UI.tocPanel, true));
   UI.btnCloseToc.addEventListener("click", () => toggleDrawer(UI.tocPanel, false));
 
-  UI.btnChecklist.addEventListener("click", () => toggleDrawer(UI.checklistPanel, true));
-  UI.btnCloseChecklist.addEventListener("click", () => toggleDrawer(UI.checklistPanel, false));
+  UI.drawerBackdrop?.addEventListener("click", () => toggleDrawer(UI.tocPanel, false));
 
-  // Backdrop closes whichever drawer is open
-  UI.drawerBackdrop?.addEventListener("click", () => {
-    toggleDrawer(UI.tocPanel, false);
-    toggleDrawer(UI.checklistPanel, false);
+  UI.btnPrev.addEventListener("click", () => pdfViewer.prev());
+  UI.btnNext.addEventListener("click", () => pdfViewer.next());
+
+  UI.btnGoChecklists.addEventListener("click", () => showPage("checklists"));
+
+  // Focus mode
+  UI.btnFocus.addEventListener("click", async () => {
+    document.body.classList.toggle("focus");
+    const on = document.body.classList.contains("focus");
+    await setDocState(db, profileId, docManifest.docId, { focus: on });
   });
 
-  UI.checklistSearch.addEventListener("input", () => checklistUI.renderCatalog());
+  // Theme (topbar + settings page)
+  const applyThemeToggle = async () => {
+    const cur = document.documentElement.dataset.theme === "light" ? "light" : "dark";
+    const next = cur === "light" ? "dark" : "light";
+    setTheme(next);
+    await setDocState(db, profileId, docManifest.docId, { theme: next });
+  };
+  UI.btnTheme.addEventListener("click", applyThemeToggle);
+  UI.btnThemeSettings?.addEventListener("click", applyThemeToggle);
 
+  // View mode (settings page)
+  UI.viewAuto.addEventListener("click", async () => { setViewMode("auto"); await setDocState(db, profileId, docManifest.docId, { viewMode:"auto" }); });
+  UI.viewMobile.addEventListener("click", async () => { setViewMode("mobile"); await setDocState(db, profileId, docManifest.docId, { viewMode:"mobile" }); });
+  UI.viewDesktop.addEventListener("click", async () => { setViewMode("desktop"); await setDocState(db, profileId, docManifest.docId, { viewMode:"desktop" }); });
+
+  // Checklist actions
+  UI.checklistSearch.addEventListener("input", () => checklistUI.renderCatalog());
   UI.btnResetChecklist.addEventListener("click", () => checklistUI.resetCurrent());
   UI.btnExportChecklistWord.addEventListener("click", () => checklistUI.exportCurrentWord());
   UI.btnExportChecklistJson.addEventListener("click", () => checklistUI.exportCurrentJson());
@@ -486,32 +580,13 @@ async function boot(){
     finally { UI.fileImportChecklistJson.value = ""; }
   });
 
-  UI.btnTheme.addEventListener("click", async () => {
-    const cur = document.documentElement.dataset.theme === "light" ? "light" : "dark";
-    const next = cur === "light" ? "dark" : "light";
-    setTheme(next);
-    await setDocState(db, profileId, docManifest.docId, { theme: next });
-  });
-
-  UI.btnFocus.addEventListener("click", async () => {
-    document.body.classList.toggle("focus");
-    const on = document.body.classList.contains("focus");
-    await setDocState(db, profileId, docManifest.docId, { focus: on });
-  });
-
-  // View mode
-  UI.viewAuto.addEventListener("click", async () => { setViewMode("auto"); await setDocState(db, profileId, docManifest.docId, { viewMode:"auto" }); });
-  UI.viewMobile.addEventListener("click", async () => { setViewMode("mobile"); await setDocState(db, profileId, docManifest.docId, { viewMode:"mobile" }); });
-  UI.viewDesktop.addEventListener("click", async () => { setViewMode("desktop"); await setDocState(db, profileId, docManifest.docId, { viewMode:"desktop" }); });
-
-  // Export/Import all
+  // Export/Import all (settings page)
   UI.btnExportAll.addEventListener("click", async () => {
     const dump = await exportAll(db, profileId, docManifest.docId);
     const blob = new Blob([JSON.stringify(dump, null, 2)], { type:"application/json" });
     downloadBlob(blob, `irpg-export-${docManifest.docId}-${Date.now()}.json`);
     toast("Exported.");
   });
-
   UI.fileImportAll.addEventListener("change", async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -528,11 +603,11 @@ async function boot(){
     }
   });
 
-  // routing
+  // Hash routing
   window.addEventListener("hashchange", () => route());
   await route();
 
-  // restore last page if no hash
+  // Restore last page position if no hash
   if (!location.hash || location.hash === "#/" || location.hash === "#"){
     const last = await getDocState(db, profileId, docManifest.docId);
     const pageIndex = Number.isFinite(last?.lastPdfPageIndex) ? last.lastPdfPageIndex : 0;
@@ -540,13 +615,12 @@ async function boot(){
     await pdfViewer.goToPage(pageIndex);
   }
 
-  showLeftTab("contents");
+  showPage("reader");
   hideSplash();
 }
 
 boot().catch((err) => {
   console.error(err);
-  // Replace splash with a visible error screen so the failure is clear on any device.
   const splash = UI.splash;
   if (splash){
     splash.classList.add("error");
@@ -560,7 +634,7 @@ boot().catch((err) => {
         ? (err?.message || String(err) || "Something went wrong.")
         : "You appear to be offline.";
     }
-    if (UI.splashSub) {
+    if (UI.splashSub){
       UI.splashSub.style.color = "#64748b";
       UI.splashSub.textContent = navigator.onLine
         ? "Try reloading the page. If the problem persists, check your connection."
@@ -569,60 +643,3 @@ boot().catch((err) => {
     splash.classList.remove("hidden");
   }
 });
-
-async function persistHighlights(){
-  await setDocState(db, profileId, docManifest.docId, { highlights });
-}
-
-function renderHighlightsList(){
-  const list = UI.highlightsList;
-  if (!list) return;
-  list.innerHTML = "";
-  if (!highlights?.length){
-    const empty = document.createElement("div");
-    empty.className = "emptyNote";
-    empty.textContent = "No highlights yet. Drag-select text in the PDF to highlight.";
-    list.appendChild(empty);
-    return;
-  }
-
-  const sorted = [...highlights].sort((a,b)=> (b.createdAt||0) - (a.createdAt||0));
-  for (const h of sorted){
-    const row = document.createElement("div");
-    row.className = "row";
-
-    const main = document.createElement("button");
-    main.className = "rowMain";
-    main.type="button";
-    main.innerHTML = `<div class="rowTitle">PDF ${Number(h.pageIndex)+1}</div><div class="rowSub">${escapeHtml((h.text||"").slice(0,140))}</div>`;
-    main.addEventListener("click", async () => {
-      showLeftTab("highlights");
-      await pdfViewer?.goToHighlight?.(h);
-    });
-
-    const meta = document.createElement("div");
-    meta.className="rowRight";
-
-    const del = document.createElement("button");
-    del.className="bmBtn";
-    del.type="button";
-    del.title="Delete highlight";
-    del.innerHTML="🗑️";
-    del.addEventListener("click", async (e)=>{
-      e.preventDefault(); e.stopPropagation();
-      highlights = highlights.filter(x => x.id !== h.id);
-      await persistHighlights();
-      pdfViewer?.setHighlights?.(highlights);
-      renderHighlightsList();
-    });
-
-    meta.appendChild(del);
-    row.appendChild(main);
-    row.appendChild(meta);
-    list.appendChild(row);
-  }
-}
-
-function slugify(str){
-  return String(str||"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"") || "x";
-}
