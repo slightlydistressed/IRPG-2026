@@ -5,6 +5,12 @@ import { PdfViewer } from "./pdf-viewer.js";
 import { renderToc, findTocNode } from "./toc-ui.js";
 import { ChecklistUI } from "./checklist-ui.js";
 
+function escapeHtml(s){
+  return String(s||"").replace(/[&<>"']/g, (m)=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[m]));
+}
+
 const UI = {
   appTitle: $("#appTitle"),
   appSubtitle: $("#appSubtitle"),
@@ -186,12 +192,6 @@ function renderBookmarksList(){
     row.appendChild(main);
     row.appendChild(right);
     UI.bookmarksList.appendChild(row);
-  }
-
-  function escapeHtml(s){
-    return String(s||"").replace(/[&<>"']/g, (m)=>({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-    }[m]));
   }
 }
 
