@@ -545,12 +545,6 @@ function renderHighlightsList(){
   }
 }
 
-function escapeHtml(s){
-  return String(s||"").replace(/[&<>"']/g, (m)=>({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-  }[m]));
-}
-
 function slugify(str){
   return String(str||"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"") || "x";
 }

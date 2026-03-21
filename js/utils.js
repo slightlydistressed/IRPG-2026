@@ -1,13 +1,5 @@
 export const $ = (sel, root=document) => root.querySelector(sel);
 
-export function clamp(value, min, max){
-  return Math.min(max, Math.max(min, value));
-}
-
-export function uid(prefix = ""){
-  return prefix + Math.random().toString(36).slice(2, 11);
-}
-
 export function toast(msg, ms=1400){
   const el = $("#toast");
   if (!el) return;
