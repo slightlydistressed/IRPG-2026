@@ -67,6 +67,10 @@ const UI = {
 
   splash: $("#splash"),
   splashMsg: $("#splashMsg"),
+  splashSub: $("#splashSub"),
+  offlineStatus: $("#offlineStatus"),
+  drawerBackdrop: $("#drawerBackdrop"),
+  checklistSaveStatus: $("#checklistSaveStatus"),
 };
 
 let db, profileId;
@@ -77,8 +81,13 @@ let bookmarks = new Set();
 let highlights = [];
 let activeTocId = null;
 
-function setSplashMsg(msg){ if (UI.splashMsg) UI.splashMsg.textContent = msg; }
-function hideSplash(){ UI.splash?.classList.add("hidden"); }
+function setSplashMsg(msg, sub){ 
+  if (UI.splashMsg) UI.splashMsg.textContent = msg; 
+  if (UI.splashSub && sub !== undefined) UI.splashSub.textContent = sub !== undefined ? sub : "";
+}
+function hideSplash(){ 
+  UI.splash?.classList.add("hidden"); 
+}
 
 function setTheme(theme){
   document.documentElement.dataset.theme = theme;
@@ -102,6 +111,14 @@ function toggleDrawer(el, open){
   if (!el) return;
   if (open) el.classList.add("open");
   else el.classList.remove("open");
+  // Show/hide backdrop when any drawer is open in drawer mode
+  if (isDrawerMode()){
+    const anyOpen = UI.tocPanel?.classList.contains("open") || UI.checklistPanel?.classList.contains("open");
+    if (UI.drawerBackdrop) {
+      UI.drawerBackdrop.classList.toggle("active", anyOpen);
+      UI.drawerBackdrop.setAttribute("aria-hidden", String(!anyOpen));
+    }
+  }
 }
 
 function isDrawerMode(){
@@ -111,23 +128,68 @@ function isDrawerMode(){
   return window.matchMedia("(max-width: 980px)").matches;
 }
 
+function setOfflineStatus(state, label){
+  const el = UI.offlineStatus;
+  if (!el) return;
+  el.className = `offlineBadge${state ? " " + state : ""}`;
+  el.textContent = label || "";
+  el.classList.toggle("hidden", !state);
+  el.title = label || "";
+}
+
 async function registerServiceWorker(){
   if (!("serviceWorker" in navigator)) return;
   try {
     const reg = await navigator.serviceWorker.register("./sw.js");
-    // When the service worker becomes active for the first time on this page
-    // (i.e. just installed), notify the user that the app is cached offline.
+
     if (reg.installing) {
+      setOfflineStatus("caching", "⏳ Caching for offline…");
       reg.installing.addEventListener("statechange", function onState(){
         if (this.state === "activated"){
+          setOfflineStatus("ready", "✓ Offline ready");
           toast("✓ App cached – works offline now", 3500);
           this.removeEventListener("statechange", onState);
         }
       });
+    } else if (reg.active) {
+      // Already installed – mark as ready if online, show appropriate state
+      if (navigator.onLine) {
+        setOfflineStatus("ready", "✓ Offline ready");
+      }
     }
+
+    // Detect when an update is waiting to install
+    reg.addEventListener("updatefound", () => {
+      const newWorker = reg.installing;
+      if (!newWorker) return;
+      newWorker.addEventListener("statechange", function onUpd(){
+        if (this.state === "installed" && reg.active){
+          setOfflineStatus("update", "↑ Update ready – reload to apply");
+          toast("Update available — reload to apply", 4000);
+          this.removeEventListener("statechange", onUpd);
+        }
+      });
+    });
   } catch(e) {
     console.warn("Service worker registration failed:", e);
   }
+}
+
+function initNetworkStatus(){
+  function update(){
+    if (!navigator.onLine){
+      setOfflineStatus("offline", "⚠ Offline");
+    }
+    // If online and status was "offline", restore to ready state
+    // (only clear the offline warning; leave caching/update states alone)
+    else if (UI.offlineStatus?.classList.contains("offline")){
+      setOfflineStatus("ready", "✓ Offline ready");
+    }
+  }
+  window.addEventListener("online",  update);
+  window.addEventListener("offline", update);
+  // Set initial offline state if offline
+  if (!navigator.onLine) setOfflineStatus("offline", "⚠ Offline – using cached version");
 }
 
 function showLeftTab(which){
@@ -284,14 +346,15 @@ async function route(){
 }
 
 async function boot(){
-  setSplashMsg("Starting up…");
+  setSplashMsg("Starting up…", "Opening local database");
   await registerServiceWorker();
+  initNetworkStatus();
 
-  setSplashMsg("Opening database…");
+  setSplashMsg("Starting up…", "Opening local database");
   db = await dbInit();
   profileId = await ensureDefaultProfile(db);
 
-  setSplashMsg("Loading document…");
+  setSplashMsg("Loading document info…", "Fetching table of contents");
   documents = await loadJson("./data/documents.json");
   const doc = documents[0];
   docManifest = await loadJson(doc.manifestPath);
@@ -318,7 +381,7 @@ async function boot(){
     }
   });
 
-  setSplashMsg("Loading PDF…");
+  setSplashMsg("Loading PDF…", "This may take a moment on first load");
   await pdfViewer.load(docManifest.pdf?.path || "./pdf/pms461.pdf");
 
   // Highlights
@@ -335,6 +398,7 @@ async function boot(){
     toast("Highlighted.");
   };
   UI.pdfScroll?.addEventListener("mouseup", () => setTimeout(onSel, 0));
+  UI.pdfScroll?.addEventListener("touchend", () => setTimeout(onSel, 50));
 
   // If manifest provides tocPath (group format), load and convert to tree
   if (docManifest.tocPath){
@@ -380,7 +444,8 @@ async function boot(){
     titleEl: UI.checklistTitle,
     searchInput: UI.checklistSearch,
     backBtn: UI.btnChecklistBack,
-    hintEl: UI.checklistHint
+    hintEl: UI.checklistHint,
+    saveStatusEl: UI.checklistSaveStatus,
   });
 
   await checklistUI.loadIndex("./data/docs/irpg/checklists/index.json");
@@ -401,6 +466,12 @@ async function boot(){
 
   UI.btnChecklist.addEventListener("click", () => toggleDrawer(UI.checklistPanel, true));
   UI.btnCloseChecklist.addEventListener("click", () => toggleDrawer(UI.checklistPanel, false));
+
+  // Backdrop closes whichever drawer is open
+  UI.drawerBackdrop?.addEventListener("click", () => {
+    toggleDrawer(UI.tocPanel, false);
+    toggleDrawer(UI.checklistPanel, false);
+  });
 
   UI.checklistSearch.addEventListener("input", () => checklistUI.renderCatalog());
 
@@ -478,16 +549,23 @@ boot().catch((err) => {
   // Replace splash with a visible error screen so the failure is clear on any device.
   const splash = UI.splash;
   if (splash){
+    splash.classList.add("error");
     const icon = splash.querySelector(".splashIcon");
     if (icon) icon.textContent = "⚠️";
+    const title = splash.querySelector(".splashTitle");
+    if (title) title.textContent = "Could not load";
     if (UI.splashMsg){
       UI.splashMsg.style.color = "#f87171";
-      UI.splashMsg.textContent = err?.message || String(err) || "Failed to start.";
+      UI.splashMsg.textContent = navigator.onLine
+        ? (err?.message || String(err) || "Something went wrong.")
+        : "You appear to be offline.";
     }
-    const hint = document.createElement("div");
-    hint.style.cssText = "margin-top:16px;font-size:0.8rem;color:#64748b;max-width:320px;line-height:1.4";
-    hint.textContent = "Try reloading. If offline, open the app while online first to cache all assets.";
-    splash.appendChild(hint);
+    if (UI.splashSub) {
+      UI.splashSub.style.color = "#64748b";
+      UI.splashSub.textContent = navigator.onLine
+        ? "Try reloading the page. If the problem persists, check your connection."
+        : "Open the app online first so it can cache itself. After caching you can use it offline.";
+    }
     splash.classList.remove("hidden");
   }
 });
