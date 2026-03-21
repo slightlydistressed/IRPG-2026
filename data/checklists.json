@@ -1,0 +1,336 @@
+{
+  "generatedAt": "2026-02-17T17:43:45.252283Z",
+  "checklists": [
+    {
+      "id": "sizeup-report",
+      "title": "Size-Up Report",
+      "source": {
+        "pdfPage": 2,
+        "note": "Front cover (inside)"
+      },
+      "fields": [
+        {
+          "id": "incidentType",
+          "label": "Incident Type (wildland fire, vehicle accident, hazmat spill, search and rescue, etc.)",
+          "type": "textarea"
+        },
+        {
+          "id": "locationJurisdiction",
+          "label": "Location / Jurisdiction",
+          "type": "textarea"
+        },
+        {
+          "id": "incidentSize",
+          "label": "Incident Size",
+          "type": "textarea"
+        },
+        {
+          "id": "incidentStatus",
+          "label": "Incident Status",
+          "type": "textarea"
+        },
+        {
+          "id": "ic",
+          "label": "Establish Incident Commander (IC)",
+          "type": "textarea"
+        },
+        {
+          "id": "incidentName",
+          "label": "Incident Name",
+          "type": "textarea"
+        },
+        {
+          "id": "weather",
+          "label": "Weather Conditions",
+          "type": "textarea"
+        },
+        {
+          "id": "radioFrequencies",
+          "label": "Radio Frequencies",
+          "type": "textarea"
+        },
+        {
+          "id": "accessRoutes",
+          "label": "Best Access Routes",
+          "type": "textarea"
+        },
+        {
+          "id": "assetsValues",
+          "label": "Assets / Values at Risk",
+          "type": "textarea"
+        },
+        {
+          "id": "hazardsConcerns",
+          "label": "Special Hazards or Concerns",
+          "type": "textarea"
+        },
+        {
+          "id": "resourceNeeds",
+          "label": "Additional Resource Needs",
+          "type": "textarea"
+        }
+      ],
+      "footerNote": "This reference assists in reporting key information when first arriving on scene. Agencies may require additional info."
+    },
+    {
+      "id": "risk-management-process",
+      "title": "Risk Management Process",
+      "source": {
+        "pdfPage": 17,
+        "note": "Operational Engagement p.1"
+      },
+      "sections": [
+        {
+          "title": "Identify Hazards (Situation Awareness)",
+          "fields": [
+            {
+              "id": "objective",
+              "label": "Objective(s)",
+              "type": "textarea"
+            },
+            {
+              "id": "communication",
+              "label": "Communication",
+              "type": "textarea"
+            },
+            {
+              "id": "whosInCharge",
+              "label": "Who’s in charge",
+              "type": "textarea"
+            },
+            {
+              "id": "previousFireBehavior",
+              "label": "Previous fire behavior",
+              "type": "textarea"
+            },
+            {
+              "id": "weatherForecast",
+              "label": "Weather forecast",
+              "type": "textarea"
+            },
+            {
+              "id": "localFactors",
+              "label": "Local factors",
+              "type": "textarea"
+            },
+            {
+              "id": "scout",
+              "label": "Scout the fire (notes)",
+              "type": "textarea"
+            }
+          ]
+        },
+        {
+          "title": "Assess Hazards",
+          "fields": [
+            {
+              "id": "potentialFireBehavior",
+              "label": "Estimate potential fire behavior hazards (look up/down/around indicators)",
+              "type": "textarea"
+            },
+            {
+              "id": "tacticalHazards",
+              "label": "Identify tactical hazards (watch outs)",
+              "type": "textarea"
+            },
+            {
+              "id": "changingConditions",
+              "label": "As conditions change, what other safety hazards are likely to exist?",
+              "type": "textarea"
+            },
+            {
+              "id": "probVsSeverity",
+              "label": "Consider probability versus severity (notes)",
+              "type": "textarea"
+            }
+          ]
+        },
+        {
+          "title": "Develop Controls and Make Risk Decisions",
+          "fields": [
+            {
+              "id": "controls",
+              "label": "Control measures to reduce risk (Orders / LCES / anchor point / downhill checklist if applicable / other controls)",
+              "type": "textarea"
+            },
+            {
+              "id": "medevacPlan",
+              "label": "Emergency medevac procedures / plan",
+              "type": "textarea"
+            },
+            {
+              "id": "controlsInPlace",
+              "label": "Are controls in place to mitigate risk? (notes)",
+              "type": "textarea"
+            },
+            {
+              "id": "tacticsBasedOnFB",
+              "label": "Are selected tactics based on expected fire behavior? (notes)",
+              "type": "textarea"
+            },
+            {
+              "id": "instructionsUnderstood",
+              "label": "Have instructions been given and understood? (notes)",
+              "type": "textarea"
+            },
+            {
+              "id": "riskVsGain",
+              "label": "Consider risk versus gain (notes)",
+              "type": "textarea"
+            }
+          ]
+        },
+        {
+          "title": "Implement Controls",
+          "fields": [
+            {
+              "id": "implementNotes",
+              "label": "Ensure controls are in place, implemented, and understood at all levels (notes)",
+              "type": "textarea"
+            }
+          ]
+        },
+        {
+          "title": "Supervise and Evaluate",
+          "fields": [
+            {
+              "id": "evaluateNotes",
+              "label": "Are controls adequately mitigating hazards? Consider human factors and situation changes (notes)",
+              "type": "textarea"
+            },
+            {
+              "id": "restart",
+              "label": "If the situation changes significantly, restart the process at the appropriate step (notes)",
+              "type": "textarea"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "briefing-checklist",
+      "title": "Briefing Checklist",
+      "source": {
+        "pdfPage": 139,
+        "note": "Back cover (inside)"
+      },
+      "sections": [
+        {
+          "title": "Situation",
+          "fields": [
+            {
+              "id": "situation1",
+              "label": "Fire name, location, map orientation, other incidents in area",
+              "type": "textarea"
+            },
+            {
+              "id": "situation2",
+              "label": "Terrain influences",
+              "type": "textarea"
+            },
+            {
+              "id": "situation3",
+              "label": "Fuel type and conditions",
+              "type": "textarea"
+            },
+            {
+              "id": "situation4",
+              "label": "Fire weather (previous, current, and expected) – winds, RH, temperature, etc.",
+              "type": "textarea"
+            },
+            {
+              "id": "situation5",
+              "label": "Fire behavior (previous, current, and expected) – time of day, alignment of slope and wind, etc.",
+              "type": "textarea"
+            }
+          ]
+        },
+        {
+          "title": "Mission / Execution",
+          "fields": [
+            {
+              "id": "command",
+              "label": "IC / immediate supervisor",
+              "type": "textarea"
+            },
+            {
+              "id": "intent",
+              "label": "Leader’s intent – overall objectives / strategy",
+              "type": "textarea"
+            },
+            {
+              "id": "assignments",
+              "label": "Specific tactical assignments",
+              "type": "textarea"
+            },
+            {
+              "id": "contingency",
+              "label": "Contingency plans",
+              "type": "textarea"
+            },
+            {
+              "id": "medevac",
+              "label": "Medevac plan – personnel, equipment, transport options, contingency plans",
+              "type": "textarea"
+            }
+          ]
+        },
+        {
+          "title": "Communications",
+          "fields": [
+            {
+              "id": "commPlan",
+              "label": "Communication plan – tactical, command, air-to-ground frequencies; cell phone numbers",
+              "type": "textarea"
+            }
+          ]
+        },
+        {
+          "title": "Service / Support",
+          "fields": [
+            {
+              "id": "otherResources",
+              "label": "Other resources – working adjacent; those available to order; aviation operations",
+              "type": "textarea"
+            },
+            {
+              "id": "logistics",
+              "label": "Logistics – transportation; supplies and equipment",
+              "type": "textarea"
+            }
+          ]
+        },
+        {
+          "title": "Risk Management",
+          "fields": [
+            {
+              "id": "hazardsRisks",
+              "label": "Identify known hazards and risks",
+              "type": "textarea"
+            },
+            {
+              "id": "controls",
+              "label": "Identify control measures to mitigate hazards / reduce risk (include LCES)",
+              "type": "textarea"
+            },
+            {
+              "id": "triggerPoints",
+              "label": "Identify trigger points for reevaluating operations",
+              "type": "textarea"
+            }
+          ]
+        },
+        {
+          "title": "Questions or Concerns?",
+          "fields": [
+            {
+              "id": "questions",
+              "label": "Questions / concerns",
+              "type": "textarea"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
