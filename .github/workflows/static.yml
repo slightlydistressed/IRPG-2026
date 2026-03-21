@@ -2,11 +2,9 @@
 name: Deploy static content to Pages
 
 on:
-  # Runs on pushes targeting the default branch.
-  # The PR branch is included temporarily so the fixed code is deployed while the PR is open.
-  # After merging to main, this entry can be removed — GitHub will not error on a missing branch.
+  # Runs on pushes targeting the default branch
   push:
-    branches: ["main", "copilot/debug-github-pages-deployment"]
+    branches: ["main"]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
