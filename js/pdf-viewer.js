@@ -433,53 +433,25 @@ export class PdfViewer{
     const srect = surface.getBoundingClientRect();
     if (!srect.width || !srect.height) return null;
 
+    // Use range.getClientRects() to get the precise visual bounds of selected text.
+    // This mirrors the approach in PDF.js 5.x's own AnnotationEditorUIManager.getSelectionBoxes().
+    // With correct CSS (font-size and transform using --scale-x / --font-height variables),
+    // each rect returned by getClientRects() corresponds to a real text run on screen.
+    // Each rect is clipped to the page surface before normalising to 0..1 coordinates.
     const rects = [];
-
-    // Prefer collecting rects from text spans inside the textLayer for accuracy.
-    // range.getClientRects() can return synthetic/collapsed rects (e.g. a 0-width rect at the
-    // start of the text layer div itself) that end up mapping to the corner of the surface.
-    // Iterating spans that intersect the range gives us only the actual glyph bounding boxes.
-    // If no spans are found (page not yet rendered, or non-text selection), we fall back to
-    // range.getClientRects() — returning null if that also yields no usable rects.
-    const textLayer = surface.querySelector(".textLayer");
-    if (textLayer) {
-      // Walk all spans that fall within the selection range
-      const spans = textLayer.querySelectorAll("span");
-      for (const span of spans) {
-        if (!range.intersectsNode(span)) continue;
-        const cr = span.getBoundingClientRect();
-        if (cr.width < 2 || cr.height < 2) continue;
-        // Intersect with surface bounds
-        const left   = Math.max(cr.left,   srect.left);
-        const right  = Math.min(cr.right,  srect.right);
-        const top    = Math.max(cr.top,    srect.top);
-        const bottom = Math.min(cr.bottom, srect.bottom);
-        if (right - left < 2 || bottom - top < 2) continue;
-        rects.push({
-          x: (left  - srect.left) / srect.width,
-          y: (top   - srect.top)  / srect.height,
-          w: (right  - left)      / srect.width,
-          h: (bottom - top)       / srect.height
-        });
-      }
-    }
-
-    // Fallback: use range.getClientRects() if no span rects were found
-    if (!rects.length) {
-      for (const cr of Array.from(range.getClientRects())){
-        if (cr.width < 2 || cr.height < 2) continue;
-        const left   = Math.max(cr.left,   srect.left);
-        const right  = Math.min(cr.right,  srect.right);
-        const top    = Math.max(cr.top,    srect.top);
-        const bottom = Math.min(cr.bottom, srect.bottom);
-        if (right - left < 2 || bottom - top < 2) continue;
-        rects.push({
-          x: (left  - srect.left) / srect.width,
-          y: (top   - srect.top)  / srect.height,
-          w: (right  - left)      / srect.width,
-          h: (bottom - top)       / srect.height
-        });
-      }
+    for (const cr of Array.from(range.getClientRects())) {
+      if (cr.width < 1 || cr.height < 1) continue;
+      const left   = Math.max(cr.left,   srect.left);
+      const right  = Math.min(cr.right,  srect.right);
+      const top    = Math.max(cr.top,    srect.top);
+      const bottom = Math.min(cr.bottom, srect.bottom);
+      if (right - left < 1 || bottom - top < 1) continue;
+      rects.push({
+        x: (left  - srect.left) / srect.width,
+        y: (top   - srect.top)  / srect.height,
+        w: (right  - left)      / srect.width,
+        h: (bottom - top)       / srect.height
+      });
     }
 
     if (!rects.length) return null;

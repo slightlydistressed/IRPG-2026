@@ -549,18 +549,39 @@ html[data-viewmode="mobile"] .checklist.open{ transform: translateX(0); }
   --scale-round-x: 1px;
   --scale-round-y: 1px;
 
-  color: transparent !important;
-  -webkit-text-fill-color: transparent !important;
+  /* pdf.js 5.x: min-font-size scaling variables */
+  --min-font-size: 1;
+  --text-scale-factor: calc(var(--total-scale-factor) * var(--min-font-size));
+  --min-font-size-inv: calc(1 / var(--min-font-size));
 }
 
-.textLayer span{
-  pointer-events: auto;
-
-  position:absolute;
-  white-space: pre;
-  transform-origin: 0% 0%;
+/* pdf.js 5.x: base styles for all span and br elements in text layer */
+.textLayer :is(span, br){
   color: transparent !important;
   -webkit-text-fill-color: transparent !important;
+  position:absolute;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0% 0%;
+  pointer-events: auto;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* pdf.js 5.x: font-size and transform for actual text items */
+.textLayer > :not(.markedContent),
+.textLayer .markedContent span:not(.markedContent){
+  z-index: 1;
+  --font-height: 0;
+  font-size: calc(var(--text-scale-factor) * var(--font-height));
+  --scale-x: 1;
+  --rotate: 0deg;
+  transform: rotate(var(--rotate)) scaleX(var(--scale-x)) scale(var(--min-font-size-inv));
+}
+
+/* pdf.js 5.x: markedContent containers have no layout box of their own */
+.textLayer .markedContent{
+  display: contents;
 }
 
 .textLayer ::selection{
