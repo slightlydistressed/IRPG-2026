@@ -2,7 +2,7 @@ import { toast, downloadBlob, loadJson } from "./utils.js";
 import { getChecklistState, setChecklistState, resetChecklistState } from "./db.js";
 
 export class ChecklistUI{
-  constructor({ db, profileId, docId, catalogEl, formWrapEl, formEl, titleEl, searchInput, backBtn, hintEl }){
+  constructor({ db, profileId, docId, catalogEl, formWrapEl, formEl, titleEl, searchInput, backBtn, hintEl, saveStatusEl }){
     this.db = db;
     this.profileId = profileId;
     this.docId = docId;
@@ -14,6 +14,7 @@ export class ChecklistUI{
     this.searchInput = searchInput;
     this.backBtn = backBtn;
     this.hintEl = hintEl;
+    this.saveStatusEl = saveStatusEl;
 
     this.index = null;
     this.items = [];
@@ -203,19 +204,32 @@ export class ChecklistUI{
 
   queueSave(){
     if (!this.current) return;
+    if (this.saveStatusEl) {
+      this.saveStatusEl.textContent = "Saving…";
+      this.saveStatusEl.className = "smallmuted saveStatus";
+    }
     clearTimeout(this._saveTimer);
     this._saveTimer = setTimeout(async () => {
       await setChecklistState(this.db, this.profileId, this.docId, this.current.id, this.state);
+      if (this.saveStatusEl) {
+        this.saveStatusEl.textContent = "✓ Saved";
+        this.saveStatusEl.className = "smallmuted saveStatus saved";
+      }
     }, 180);
   }
 
   async resetCurrent(){
     if (!this.current) return;
-    if (!confirm("Reset this checklist? This clears saved answers on this device.")) return;
+    const title = this.currentDef?.title || this.current.title || "this checklist";
+    if (!confirm(`Reset "${title}"?\n\nThis will permanently clear all saved answers for this checklist on this device. This cannot be undone.`)) return;
     await resetChecklistState(this.db, this.profileId, this.docId, this.current.id);
     this.state = {};
     this.renderForm();
-    toast("Checklist reset.");
+    if (this.saveStatusEl) {
+      this.saveStatusEl.textContent = "";
+      this.saveStatusEl.className = "smallmuted saveStatus";
+    }
+    toast("Checklist answers cleared.");
   }
 
   exportCurrentJson(){
@@ -232,15 +246,15 @@ export class ChecklistUI{
   }
 
   async importCurrentJson(file){
-    if (!this.current) throw new Error("Pick a checklist first.");
+    if (!this.current) throw new Error("Please select a checklist first, then import answers for it.");
     const text = await file.text();
     const data = JSON.parse(text);
-    if (!data || typeof data !== "object") throw new Error("Bad JSON.");
+    if (!data || typeof data !== "object") throw new Error("Not a valid backup file.");
     const answers = data.answers || {};
     this.state = { ...answers };
     await setChecklistState(this.db, this.profileId, this.docId, this.current.id, this.state);
     this.renderForm();
-    toast("Imported.");
+    toast("Answers restored from backup.");
   }
 
   exportCurrentWord(){
