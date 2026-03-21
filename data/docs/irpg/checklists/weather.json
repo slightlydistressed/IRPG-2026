@@ -1,0 +1,20 @@
+{
+  "id": "weather",
+  "title": "Weather",
+  "fields": [
+    { "id": "siteLocation", "label": "Site Location", "type": "textarea", "set": "gps" },
+    { "id": "date", "label": "Date", "type": "input", "set": "date" },
+    { "id": "time", "label": "Time", "type": "input", "set": "time" },
+
+    { "id": "elevation", "label": "Elevation", "type": "textarea" },
+    { "id": "windDirection", "label": "Wind Direction", "type": "textarea" },
+    { "id": "windSpeed", "label": "Wind Speed", "type": "textarea" },
+    { "id": "dryBulbTemp", "label": "Dry Bulb Temp", "type": "textarea" },
+    { "id": "wetBulbTemp", "label": "Wet Bulb Temp", "type": "textarea" },
+    { "id": "rh", "label": "RH", "type": "textarea" },
+    { "id": "dewpoint", "label": "Dewpoint Temp [TD]", "type": "textarea" },
+    { "id": "skyCover", "label": "Sky Cover", "type": "textarea" },
+    { "id": "wx", "label": "Weather [WX]", "type": "textarea" },
+    { "id": "specialRemarks", "label": "Special Remarks", "type": "textarea" }
+  ]
+}
