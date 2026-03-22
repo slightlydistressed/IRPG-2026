@@ -555,10 +555,18 @@ html[data-viewmode="mobile"] .checklist.open{ transform: translateX(0); }
 
 .textLayer span{
   pointer-events: auto;
+  cursor: text;
 
   position:absolute;
   white-space: pre;
   transform-origin: 0% 0%;
+
+  /* PDF.js 5.x: apply per-span horizontal scale and rotation set via CSS vars */
+  transform: scaleX(var(--scale-x, 1)) rotate(var(--rotate, 0deg));
+
+  /* PDF.js 5.x: use font height (PDF user units) × total scale = correct CSS px */
+  font-size: calc(var(--font-height) * var(--total-scale-factor));
+
   color: transparent !important;
   -webkit-text-fill-color: transparent !important;
 }

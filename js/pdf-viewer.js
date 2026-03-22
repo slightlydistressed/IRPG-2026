@@ -429,58 +429,86 @@ export class PdfViewer{
     const rendered = this.rendered.get(pageIndex);
     if (!rendered) return null;
 
-    const surface = rendered.surface;
+    const { surface, textLayer } = rendered;
     const srect = surface.getBoundingClientRect();
     if (!srect.width || !srect.height) return null;
 
     const rects = [];
-    const MIN_SIZE = 2;
+    const MIN_PX = 2; // minimum pixel size to consider a rect
 
-    const addClientRect = (cr) => {
-      if (cr.width < MIN_SIZE || cr.height < MIN_SIZE) return;
-      const left   = Math.max(cr.left,   srect.left);
-      const right  = Math.min(cr.right,  srect.right);
-      const top    = Math.max(cr.top,    srect.top);
-      const bottom = Math.min(cr.bottom, srect.bottom);
-      if (right - left < MIN_SIZE || bottom - top < MIN_SIZE) return;
-      rects.push({
-        x: (left  - srect.left) / srect.width,
-        y: (top   - srect.top)  / srect.height,
-        w: (right  - left)      / srect.width,
-        h: (bottom - top)       / srect.height
-      });
-    };
+    // ------------------------------------------------------------------
+    // Primary strategy: read span CSS left%/top% values that PDF.js 5.x
+    // writes directly from PDF coordinates.  These are immune to CSS
+    // variable resolution problems that can collapse the text-layer to
+    // zero-width and push every rendered span to viewport position (0,0),
+    // which is the root cause of highlights always stacking in the
+    // top-left corner.
+    // ------------------------------------------------------------------
+    const scaleFactor = parseFloat(surface.style.getPropertyValue("--scale-factor")) || 1;
+    let usedSpanStrategy = false;
 
-    // Primary: use range.getClientRects() which returns accurate viewport-space
-    // rects for the actual selected text.  Modern browsers correctly account for
-    // CSS transforms used by PDF.js text spans, so this is more reliable than
-    // iterating span elements (which can pick up large wrapper spans created by
-    // PDF.js's includeMarkedContent option whose bounding rects cover entire
-    // paragraphs instead of just the selected text).
-    for (const cr of Array.from(range.getClientRects())) {
-      addClientRect(cr);
+    if (textLayer) {
+      for (const span of textLayer.querySelectorAll("span")) {
+        // Skip non-leaf markedContent wrapper spans (they contain child spans
+        // and their bounding boxes cover entire paragraphs).
+        if (span.querySelector("span")) continue;
+        if (!range.intersectsNode(span)) continue;
+
+        const leftPct = parseFloat(span.style.left);
+        const topPct  = parseFloat(span.style.top);
+        // Spans positioned by PDF.js 5.x always have percentage left/top.
+        if (!Number.isFinite(leftPct) || !Number.isFinite(topPct)) continue;
+
+        // x and y are already 0..1 fractions of the page surface.
+        const x = leftPct / 100;
+        const y = topPct  / 100;
+
+        // Height: derive from --font-height (PDF user units) × scale factor
+        // so it is independent of the CSS variable resolution state.
+        const fontHeightPdfUnits = parseFloat(span.style.getPropertyValue("--font-height")) || 0;
+        let h = fontHeightPdfUnits > 0
+          ? (fontHeightPdfUnits * scaleFactor) / srect.height
+          : 0;
+
+        // Width: use the span's rendered bounding rect (correct once the CSS
+        // transform rules are in place; acceptable otherwise).
+        const cr = span.getBoundingClientRect();
+        const w  = cr.width  / srect.width;
+
+        // Fall back to rendered height if font-height metadata is unavailable.
+        if (h <= 0) h = cr.height / srect.height;
+
+        if (w * srect.width < MIN_PX || h * srect.height < MIN_PX) continue;
+
+        rects.push({ x, y, w: Math.max(0, w), h: Math.max(0, h) });
+        usedSpanStrategy = true;
+      }
     }
 
-    // Fallback: if getClientRects() yielded nothing, walk only leaf spans in the
-    // text layer (skip any span that contains child spans, since those are
-    // includeMarkedContent wrapper elements with over-sized bounding boxes).
-    if (!rects.length) {
-      const textLayer = surface.querySelector(".textLayer");
-      if (textLayer) {
-        for (const span of textLayer.querySelectorAll("span")) {
-          if (span.querySelector("span")) continue; // skip non-leaf wrappers
-          if (!range.intersectsNode(span)) continue;
-          addClientRect(span.getBoundingClientRect());
-        }
+    // ------------------------------------------------------------------
+    // Fallback: use range.getClientRects() when no span-level data was
+    // found (e.g., text layer not yet available, or non-PDF.js content).
+    // ------------------------------------------------------------------
+    if (!usedSpanStrategy) {
+      for (const cr of Array.from(range.getClientRects())) {
+        if (cr.width < MIN_PX || cr.height < MIN_PX) continue;
+        const left   = Math.max(cr.left,   srect.left);
+        const right  = Math.min(cr.right,  srect.right);
+        const top    = Math.max(cr.top,    srect.top);
+        const bottom = Math.min(cr.bottom, srect.bottom);
+        if (right - left < MIN_PX || bottom - top < MIN_PX) continue;
+        rects.push({
+          x: (left  - srect.left) / srect.width,
+          y: (top   - srect.top)  / srect.height,
+          w: (right  - left)      / srect.width,
+          h: (bottom - top)       / srect.height
+        });
       }
     }
 
     if (!rects.length) return null;
 
-    // Merge adjacent rects that sit on the same visual line so we store one
-    // rect per line rather than one rect per PDF.js text span.  Adapted from
-    // the rect-merging approach used in Chromium's PDF text-selection code and
-    // the embedpdf/embed-pdf-viewer reference library.
+    // Merge adjacent rects on the same visual line into one rect per line.
     const merged = _mergeHighlightRects(rects);
 
     // clear selection for a "Kindle" feel
