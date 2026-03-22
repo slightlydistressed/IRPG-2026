@@ -141,6 +141,7 @@ function setPage(name){
 
 /* ---- Sidebar toggle ---- */
 function toggleSidebar(){
+  if (!isDrawerMode()) return;
   const isOpen = UI.sidebar?.classList.contains("open");
   UI.sidebar?.classList.toggle("open", !isOpen);
   if (UI.sidebarBackdrop){

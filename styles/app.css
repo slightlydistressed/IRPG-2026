@@ -184,8 +184,6 @@ body {
   backdrop-filter: blur(2px);
 }
 
-.sidebarBackdrop.active { display: block; }
-
 /* =====================================================================
    MAIN WRAPPER
    ===================================================================== */
@@ -760,6 +758,8 @@ body.focus .toc { display: none; }
     transition: transform .2s ease;
   }
   .sidebar.open { transform: translateX(0); }
+
+  .sidebarBackdrop.active { display: block; }
 
   /* appWrap takes full width since sidebar is out of flow */
   .appWrap { width: 100%; }
