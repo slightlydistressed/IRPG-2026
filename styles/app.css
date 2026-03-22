@@ -577,6 +577,7 @@ html[data-viewmode="mobile"] .checklist.open{ transform: translateX(0); }
   position:absolute;
   background: var(--hl);
   border-radius: 4px;
+  mix-blend-mode: multiply;
 }
 
 /* --- Boot loading / splash overlay --- */
