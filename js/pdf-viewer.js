@@ -393,7 +393,7 @@ export class PdfViewer{
     const w = surface.clientWidth || 1;
     const h = surface.clientHeight || 1;
 
-    const hs = this.highlights.filter(x => x.pageIndex === pageIndex);
+    const hs = this.highlights.filter(x => Number(x.pageIndex) === pageIndex);
     for (const hlt of hs){
       for (const r of (hlt.rects || [])){
         const div = document.createElement("div");

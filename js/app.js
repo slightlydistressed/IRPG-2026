@@ -392,10 +392,12 @@ async function boot(){
     const h = pdfViewer.captureSelectionHighlight?.();
     if (!h) return;
     highlights.push(h);
-    await persistHighlights();
+    // Draw and update UI immediately so the highlight appears without waiting
+    // for the IndexedDB write, which can take 10–100 ms.
     pdfViewer.setHighlights?.(highlights);
     renderHighlightsList();
     toast("Highlighted.");
+    await persistHighlights();
   };
   UI.pdfScroll?.addEventListener("mouseup", () => setTimeout(onSel, 0));
   UI.pdfScroll?.addEventListener("touchend", () => setTimeout(onSel, 50));
