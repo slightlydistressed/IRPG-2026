@@ -72,9 +72,6 @@
         </div>
 
         <div id="highlightsView" class="view hidden">
-          <div class="emptyNote">
-            Select text in the PDF to highlight it. Tap a highlight here to jump back to it.
-          </div>
           <div id="highlightsList" class="list"></div>
         </div>
       </div>
@@ -90,7 +87,7 @@
         <div class="viewerleft">
           <button id="btnPrev" class="pill" type="button" aria-label="Previous page">← Prev</button>
           <button id="btnNext" class="pill" type="button" aria-label="Next page">Next →</button>
-          <span id="pageReadout" class="pagenum" aria-live="polite">Page —</span>
+          <span id="pageReadout" class="pagenum pageReadoutBtn" role="button" tabindex="0" title="Click to jump to a specific page" aria-label="Current page — click to jump">Page —</span>
         </div>
         <div class="viewerright">
           <button id="btnChecklist" class="pill" type="button" title="Open checklists panel">Checklist ☰</button>
