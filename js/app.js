@@ -94,6 +94,11 @@ function setTheme(theme){
   UI.btnTheme.textContent = theme === "light" ? "Light" : "Dark";
 }
 
+function syncFocusBtn(){
+  const on = document.body.classList.contains("focus");
+  if (UI.btnFocus) UI.btnFocus.textContent = on ? "Exit Focus" : "Focus";
+}
+
 function syncTopbarHeight(){
   const topbar = document.querySelector(".topbar");
   const height = topbar?.offsetHeight || 56;
@@ -366,6 +371,7 @@ async function boot(){
   setTheme(st?.theme || "dark");
   setViewMode(st?.viewMode || "auto");
   document.body.classList.toggle("focus", !!st?.focus);
+  syncFocusBtn();
 
   bookmarks = new Set(Array.isArray(st?.bookmarks) ? st.bookmarks : []);
   highlights = Array.isArray(st?.highlights) ? st.highlights : [];
@@ -497,6 +503,7 @@ async function boot(){
 
   UI.btnFocus.addEventListener("click", async () => {
     document.body.classList.toggle("focus");
+    syncFocusBtn();
     const on = document.body.classList.contains("focus");
     await setDocState(db, profileId, docManifest.docId, { focus: on });
   });
@@ -542,6 +549,37 @@ async function boot(){
     await pdfViewer.goToPage(pageIndex);
   }
 
+  // Page jump: click page readout to type a specific page number
+  UI.pageReadout?.addEventListener("click", async () => {
+    if (!pdfViewer?.pageCount) return;
+    const current = (pdfViewer.currentPageIndex || 0) + 1;
+    const raw = prompt(`Jump to page (1–${pdfViewer.pageCount}):`, String(current));
+    if (raw === null) return; // cancelled
+    const n = parseInt(raw, 10);
+    if (!Number.isFinite(n)) return;
+    const target = Math.max(1, Math.min(pdfViewer.pageCount, n)) - 1;
+    gotoPage(target);
+    await pdfViewer.goToPage(target);
+  });
+  UI.pageReadout?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); UI.pageReadout.click(); }
+  });
+
+  // Keyboard navigation: arrow keys / PageUp / PageDown when not in an input
+  document.addEventListener("keydown", (e) => {
+    if (!pdfViewer) return;
+    const tag = document.activeElement?.tagName?.toLowerCase();
+    if (tag === "input" || tag === "textarea" || tag === "select") return;
+    if (document.activeElement?.isContentEditable) return;
+    if (e.key === "ArrowRight" || e.key === "ArrowDown" || e.key === "PageDown"){
+      e.preventDefault();
+      pdfViewer.next();
+    } else if (e.key === "ArrowLeft" || e.key === "ArrowUp" || e.key === "PageUp"){
+      e.preventDefault();
+      pdfViewer.prev();
+    }
+  });
+
   showLeftTab("contents");
   hideSplash();
 }
@@ -583,7 +621,7 @@ function renderHighlightsList(){
   if (!highlights?.length){
     const empty = document.createElement("div");
     empty.className = "emptyNote";
-    empty.textContent = "No highlights yet. Drag-select text in the PDF to highlight.";
+    empty.textContent = "No highlights yet. Select text in the PDF to highlight it. Tap a highlight here to jump back to it.";
     list.appendChild(empty);
     return;
   }
