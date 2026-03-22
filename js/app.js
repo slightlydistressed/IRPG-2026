@@ -15,17 +15,28 @@ const UI = {
   appTitle: $("#appTitle"),
   appSubtitle: $("#appSubtitle"),
 
+  // Sidebar nav
+  sidebar: $("#sidebar"),
+  btnSidebarToggle: $("#btnSidebarToggle"),
+  sidebarBackdrop: $("#sidebarBackdrop"),
+  navPdf: $("#navPdf"),
+  navChecklists: $("#navChecklists"),
+  navHighlights: $("#navHighlights"),
+
+  // Pages
+  pagePdf: $("#pagePdf"),
+  pageChecklists: $("#pageChecklists"),
+  pageHighlights: $("#pageHighlights"),
+
+  // TOC panel (within PDF page)
   btnToc: $("#btnToc"),
   btnCloseToc: $("#btnCloseToc"),
   tocPanel: $("#tocPanel"),
 
   tabContents: $("#tabContents"),
   tabBookmarks: $("#tabBookmarks"),
-  tabHighlights: $("#tabHighlights"),
   tocView: $("#tocView"),
   bookmarksView: $("#bookmarksView"),
-  highlightsView: $("#highlightsView"),
-  highlightsList: $("#highlightsList"),
 
   tocTree: $("#tocTree"),
   tocSearch: $("#tocSearch"),
@@ -33,15 +44,17 @@ const UI = {
   bookmarksList: $("#bookmarksList"),
   bookmarksSearch: $("#bookmarksSearch"),
 
+  // PDF viewer
   btnPrev: $("#btnPrev"),
   btnNext: $("#btnNext"),
   pageReadout: $("#pageReadout"),
   pdfScroll: $("#pdfScroll"),
 
-  btnChecklist: $("#btnChecklist"),
-  checklistPanel: $("#checklistPanel"),
-  btnCloseChecklist: $("#btnCloseChecklist"),
+  // Highlights page
+  highlightsList: $("#highlightsList"),
 
+  // Checklist page
+  checklistPanel: $("#checklistPanel"),
   checklistHint: $("#checklistHint"),
   checklistSearch: $("#checklistSearch"),
   checklistCatalog: $("#checklistCatalog"),
@@ -49,19 +62,14 @@ const UI = {
   checklistForm: $("#checklistForm"),
   checklistTitle: $("#checklistTitle"),
   btnChecklistBack: $("#btnChecklistBack"),
-
   btnResetChecklist: $("#btnResetChecklist"),
   btnExportChecklistWord: $("#btnExportChecklistWord"),
   btnExportChecklistJson: $("#btnExportChecklistJson"),
   fileImportChecklistJson: $("#fileImportChecklistJson"),
 
+  // Global controls
   btnTheme: $("#btnTheme"),
   btnFocus: $("#btnFocus"),
-
-  viewAuto: $("#viewAuto"),
-  viewMobile: $("#viewMobile"),
-  viewDesktop: $("#viewDesktop"),
-
   btnExportAll: $("#btnExportAll"),
   fileImportAll: $("#fileImportAll"),
 
@@ -80,6 +88,10 @@ let pdfViewer, tocController, checklistUI;
 let bookmarks = new Set();
 let highlights = [];
 let activeTocId = null;
+let currentPage = "pdf";
+
+// Breakpoint must match @media (max-width: 980px) in app.css
+const DRAWER_BREAKPOINT_PX = 980;
 
 function setSplashMsg(msg, sub){ 
   if (UI.splashMsg) UI.splashMsg.textContent = msg; 
@@ -105,20 +117,45 @@ function syncTopbarHeight(){
   document.documentElement.style.setProperty("--topbar-height", `${height}px`);
 }
 
-function setViewMode(mode){
-  document.documentElement.dataset.viewmode = mode;
-  UI.viewAuto.classList.toggle("active", mode === "auto");
-  UI.viewMobile.classList.toggle("active", mode === "mobile");
-  UI.viewDesktop.classList.toggle("active", mode === "desktop");
+/* ---- Page routing ---- */
+function setPage(name){
+  currentPage = name;
+
+  UI.pagePdf?.classList.toggle("hidden",        name !== "pdf");
+  UI.pageChecklists?.classList.toggle("hidden", name !== "checklists");
+  UI.pageHighlights?.classList.toggle("hidden", name !== "highlights");
+
+  document.querySelectorAll(".navItem").forEach(el => {
+    el.classList.toggle("active", el.dataset.page === name);
+  });
+
+  if (name === "highlights") renderHighlightsList();
+
+  // On mobile, close sidebar after navigating
+  if (isDrawerMode()){
+    UI.sidebar?.classList.remove("open");
+    UI.sidebarBackdrop?.classList.remove("active");
+    UI.sidebarBackdrop?.setAttribute("aria-hidden", "true");
+  }
+}
+
+/* ---- Sidebar toggle ---- */
+function toggleSidebar(){
+  const isOpen = UI.sidebar?.classList.contains("open");
+  UI.sidebar?.classList.toggle("open", !isOpen);
+  if (UI.sidebarBackdrop){
+    UI.sidebarBackdrop.classList.toggle("active", !isOpen);
+    UI.sidebarBackdrop.setAttribute("aria-hidden", String(isOpen));
+  }
 }
 
 function toggleDrawer(el, open){
   if (!el) return;
   if (open) el.classList.add("open");
   else el.classList.remove("open");
-  // Show/hide backdrop when any drawer is open in drawer mode
+  // Show/hide backdrop when TOC drawer is open on mobile
   if (isDrawerMode()){
-    const anyOpen = UI.tocPanel?.classList.contains("open") || UI.checklistPanel?.classList.contains("open");
+    const anyOpen = UI.tocPanel?.classList.contains("open");
     if (UI.drawerBackdrop) {
       UI.drawerBackdrop.classList.toggle("active", anyOpen);
       UI.drawerBackdrop.setAttribute("aria-hidden", String(!anyOpen));
@@ -127,10 +164,7 @@ function toggleDrawer(el, open){
 }
 
 function isDrawerMode(){
-  const vm = document.documentElement.dataset.viewmode || "auto";
-  if (vm === "mobile") return true;
-  if (vm === "desktop") return false;
-  return window.matchMedia("(max-width: 980px)").matches;
+  return window.matchMedia(`(max-width: ${DRAWER_BREAKPOINT_PX}px)`).matches;
 }
 
 function setOfflineStatus(state, label){
@@ -200,11 +234,9 @@ function initNetworkStatus(){
 function showLeftTab(which){
   UI.tocView.classList.toggle("hidden", which !== "contents");
   UI.bookmarksView.classList.toggle("hidden", which !== "bookmarks");
-  UI.highlightsView.classList.toggle("hidden", which !== "highlights");
 
   UI.tabContents.classList.toggle("active", which === "contents");
   UI.tabBookmarks.classList.toggle("active", which === "bookmarks");
-  UI.tabHighlights.classList.toggle("active", which === "highlights");
 }
 
 async function persistBookmarks(){
@@ -336,9 +368,9 @@ async function handleTocSelect(node){
     await setDocState(db, profileId, docManifest.docId, { lastTocId: node.id });
   }
 
-  // If TOC node references a checklistId, open that checklist
+  // If TOC node references a checklistId, navigate to the Checklists page
   if (node.checklistId){
-    toggleDrawer(UI.checklistPanel, true);
+    setPage("checklists");
     checklistUI?.openChecklist(node.checklistId).catch(()=>{});
   }
 }
@@ -369,7 +401,6 @@ async function boot(){
 
   const st = await getDocState(db, profileId, docManifest.docId);
   setTheme(st?.theme || "dark");
-  setViewMode(st?.viewMode || "auto");
   document.body.classList.toggle("focus", !!st?.focus);
   syncFocusBtn();
 
@@ -458,35 +489,52 @@ async function boot(){
 
   await checklistUI.loadIndex("./data/docs/irpg/checklists/index.json");
 
-  // Left panel tabs
+  // Left panel tabs (Contents / Bookmarks within PDF page)
   UI.tabContents.addEventListener("click", () => showLeftTab("contents"));
   UI.tabBookmarks.addEventListener("click", () => { showLeftTab("bookmarks"); renderBookmarksList(); });
-  UI.tabHighlights.addEventListener("click", () => showLeftTab("highlights"));
 
   UI.bookmarksSearch.addEventListener("input", renderBookmarksList);
 
-  // Buttons
+  // PDF navigation buttons
   UI.btnPrev.addEventListener("click", () => pdfViewer.prev());
   UI.btnNext.addEventListener("click", () => pdfViewer.next());
 
-  UI.btnToc.addEventListener("click", () => toggleDrawer(UI.tocPanel, true));
-  UI.btnCloseToc.addEventListener("click", () => toggleDrawer(UI.tocPanel, false));
+  // TOC toggle (hamburger within the PDF viewer header)
+  UI.btnToc?.addEventListener("click", () => {
+    if (isDrawerMode()){
+      toggleDrawer(UI.tocPanel, !UI.tocPanel?.classList.contains("open"));
+    } else {
+      UI.tocPanel?.classList.toggle("hidden");
+    }
+  });
+  UI.btnCloseToc?.addEventListener("click", () => toggleDrawer(UI.tocPanel, false));
 
-  UI.btnChecklist.addEventListener("click", () => toggleDrawer(UI.checklistPanel, true));
-  UI.btnCloseChecklist.addEventListener("click", () => toggleDrawer(UI.checklistPanel, false));
-
-  // Backdrop closes whichever drawer is open
+  // TOC drawer backdrop
   UI.drawerBackdrop?.addEventListener("click", () => {
     toggleDrawer(UI.tocPanel, false);
-    toggleDrawer(UI.checklistPanel, false);
   });
 
-  UI.checklistSearch.addEventListener("input", () => checklistUI.renderCatalog());
+  // Sidebar toggle (hamburger in topbar)
+  UI.btnSidebarToggle?.addEventListener("click", toggleSidebar);
 
-  UI.btnResetChecklist.addEventListener("click", () => checklistUI.resetCurrent());
-  UI.btnExportChecklistWord.addEventListener("click", () => checklistUI.exportCurrentWord());
-  UI.btnExportChecklistJson.addEventListener("click", () => checklistUI.exportCurrentJson());
-  UI.fileImportChecklistJson.addEventListener("change", async (e) => {
+  // Sidebar backdrop (mobile)
+  UI.sidebarBackdrop?.addEventListener("click", () => {
+    UI.sidebar?.classList.remove("open");
+    UI.sidebarBackdrop.classList.remove("active");
+    UI.sidebarBackdrop.setAttribute("aria-hidden", "true");
+  });
+
+  // Sidebar nav items → page switching
+  document.querySelectorAll(".navItem[data-page]").forEach(btn => {
+    btn.addEventListener("click", () => setPage(btn.dataset.page));
+  });
+
+  // Checklist page controls
+  UI.checklistSearch?.addEventListener("input", () => checklistUI.renderCatalog());
+  UI.btnResetChecklist?.addEventListener("click", () => checklistUI.resetCurrent());
+  UI.btnExportChecklistWord?.addEventListener("click", () => checklistUI.exportCurrentWord());
+  UI.btnExportChecklistJson?.addEventListener("click", () => checklistUI.exportCurrentJson());
+  UI.fileImportChecklistJson?.addEventListener("change", async (e) => {
     const f = e.target.files?.[0];
     if (!f) return;
     try { await checklistUI.importCurrentJson(f); }
@@ -494,34 +542,31 @@ async function boot(){
     finally { UI.fileImportChecklistJson.value = ""; }
   });
 
-  UI.btnTheme.addEventListener("click", async () => {
+  // Theme
+  UI.btnTheme?.addEventListener("click", async () => {
     const cur = document.documentElement.dataset.theme === "light" ? "light" : "dark";
     const next = cur === "light" ? "dark" : "light";
     setTheme(next);
     await setDocState(db, profileId, docManifest.docId, { theme: next });
   });
 
-  UI.btnFocus.addEventListener("click", async () => {
+  // Focus mode (hides TOC on PDF page)
+  UI.btnFocus?.addEventListener("click", async () => {
     document.body.classList.toggle("focus");
     syncFocusBtn();
     const on = document.body.classList.contains("focus");
     await setDocState(db, profileId, docManifest.docId, { focus: on });
   });
 
-  // View mode
-  UI.viewAuto.addEventListener("click", async () => { setViewMode("auto"); await setDocState(db, profileId, docManifest.docId, { viewMode:"auto" }); });
-  UI.viewMobile.addEventListener("click", async () => { setViewMode("mobile"); await setDocState(db, profileId, docManifest.docId, { viewMode:"mobile" }); });
-  UI.viewDesktop.addEventListener("click", async () => { setViewMode("desktop"); await setDocState(db, profileId, docManifest.docId, { viewMode:"desktop" }); });
-
-  // Export/Import all
-  UI.btnExportAll.addEventListener("click", async () => {
+  // Export/Import all data
+  UI.btnExportAll?.addEventListener("click", async () => {
     const dump = await exportAll(db, profileId, docManifest.docId);
     const blob = new Blob([JSON.stringify(dump, null, 2)], { type:"application/json" });
     downloadBlob(blob, `irpg-export-${docManifest.docId}-${Date.now()}.json`);
     toast("Exported.");
   });
 
-  UI.fileImportAll.addEventListener("change", async (e) => {
+  UI.fileImportAll?.addEventListener("change", async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
@@ -537,11 +582,11 @@ async function boot(){
     }
   });
 
-  // routing
+  // URL hash routing
   window.addEventListener("hashchange", () => route());
   await route();
 
-  // restore last page if no hash
+  // Restore last page if no hash
   if (!location.hash || location.hash === "#/" || location.hash === "#"){
     const last = await getDocState(db, profileId, docManifest.docId);
     const pageIndex = Number.isFinite(last?.lastPdfPageIndex) ? last.lastPdfPageIndex : 0;
@@ -554,7 +599,7 @@ async function boot(){
     if (!pdfViewer?.pageCount) return;
     const current = (pdfViewer.currentPageIndex || 0) + 1;
     const raw = prompt(`Jump to page (1–${pdfViewer.pageCount}):`, String(current));
-    if (raw === null) return; // cancelled
+    if (raw === null) return;
     const n = parseInt(raw, 10);
     if (!Number.isFinite(n)) return;
     const target = Math.max(1, Math.min(pdfViewer.pageCount, n)) - 1;
@@ -567,7 +612,7 @@ async function boot(){
 
   // Keyboard navigation: arrow keys / PageUp / PageDown when not in an input
   document.addEventListener("keydown", (e) => {
-    if (!pdfViewer) return;
+    if (!pdfViewer || currentPage !== "pdf") return;
     const tag = document.activeElement?.tagName?.toLowerCase();
     if (tag === "input" || tag === "textarea" || tag === "select") return;
     if (document.activeElement?.isContentEditable) return;
@@ -636,7 +681,8 @@ function renderHighlightsList(){
     main.type="button";
     main.innerHTML = `<div class="rowTitle">PDF ${Number(h.pageIndex)+1}</div><div class="rowSub">${escapeHtml((h.text||"").slice(0,140))}</div>`;
     main.addEventListener("click", async () => {
-      showLeftTab("highlights");
+      // Navigate to PDF page, then jump to the highlight
+      setPage("pdf");
       await pdfViewer?.goToHighlight?.(h);
     });
 
