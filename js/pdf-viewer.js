@@ -434,55 +434,54 @@ export class PdfViewer{
     if (!srect.width || !srect.height) return null;
 
     const rects = [];
+    const MIN_SIZE = 2;
 
-    // Prefer collecting rects from text spans inside the textLayer for accuracy.
-    // range.getClientRects() can return synthetic/collapsed rects (e.g. a 0-width rect at the
-    // start of the text layer div itself) that end up mapping to the corner of the surface.
-    // Iterating spans that intersect the range gives us only the actual glyph bounding boxes.
-    // If no spans are found (page not yet rendered, or non-text selection), we fall back to
-    // range.getClientRects() — returning null if that also yields no usable rects.
-    const textLayer = surface.querySelector(".textLayer");
-    if (textLayer) {
-      // Walk all spans that fall within the selection range
-      const spans = textLayer.querySelectorAll("span");
-      for (const span of spans) {
-        if (!range.intersectsNode(span)) continue;
-        const cr = span.getBoundingClientRect();
-        if (cr.width < 2 || cr.height < 2) continue;
-        // Intersect with surface bounds
-        const left   = Math.max(cr.left,   srect.left);
-        const right  = Math.min(cr.right,  srect.right);
-        const top    = Math.max(cr.top,    srect.top);
-        const bottom = Math.min(cr.bottom, srect.bottom);
-        if (right - left < 2 || bottom - top < 2) continue;
-        rects.push({
-          x: (left  - srect.left) / srect.width,
-          y: (top   - srect.top)  / srect.height,
-          w: (right  - left)      / srect.width,
-          h: (bottom - top)       / srect.height
-        });
-      }
+    const addClientRect = (cr) => {
+      if (cr.width < MIN_SIZE || cr.height < MIN_SIZE) return;
+      const left   = Math.max(cr.left,   srect.left);
+      const right  = Math.min(cr.right,  srect.right);
+      const top    = Math.max(cr.top,    srect.top);
+      const bottom = Math.min(cr.bottom, srect.bottom);
+      if (right - left < MIN_SIZE || bottom - top < MIN_SIZE) return;
+      rects.push({
+        x: (left  - srect.left) / srect.width,
+        y: (top   - srect.top)  / srect.height,
+        w: (right  - left)      / srect.width,
+        h: (bottom - top)       / srect.height
+      });
+    };
+
+    // Primary: use range.getClientRects() which returns accurate viewport-space
+    // rects for the actual selected text.  Modern browsers correctly account for
+    // CSS transforms used by PDF.js text spans, so this is more reliable than
+    // iterating span elements (which can pick up large wrapper spans created by
+    // PDF.js's includeMarkedContent option whose bounding rects cover entire
+    // paragraphs instead of just the selected text).
+    for (const cr of Array.from(range.getClientRects())) {
+      addClientRect(cr);
     }
 
-    // Fallback: use range.getClientRects() if no span rects were found
+    // Fallback: if getClientRects() yielded nothing, walk only leaf spans in the
+    // text layer (skip any span that contains child spans, since those are
+    // includeMarkedContent wrapper elements with over-sized bounding boxes).
     if (!rects.length) {
-      for (const cr of Array.from(range.getClientRects())){
-        if (cr.width < 2 || cr.height < 2) continue;
-        const left   = Math.max(cr.left,   srect.left);
-        const right  = Math.min(cr.right,  srect.right);
-        const top    = Math.max(cr.top,    srect.top);
-        const bottom = Math.min(cr.bottom, srect.bottom);
-        if (right - left < 2 || bottom - top < 2) continue;
-        rects.push({
-          x: (left  - srect.left) / srect.width,
-          y: (top   - srect.top)  / srect.height,
-          w: (right  - left)      / srect.width,
-          h: (bottom - top)       / srect.height
-        });
+      const textLayer = surface.querySelector(".textLayer");
+      if (textLayer) {
+        for (const span of textLayer.querySelectorAll("span")) {
+          if (span.querySelector("span")) continue; // skip non-leaf wrappers
+          if (!range.intersectsNode(span)) continue;
+          addClientRect(span.getBoundingClientRect());
+        }
       }
     }
 
     if (!rects.length) return null;
+
+    // Merge adjacent rects that sit on the same visual line so we store one
+    // rect per line rather than one rect per PDF.js text span.  Adapted from
+    // the rect-merging approach used in Chromium's PDF text-selection code and
+    // the embedpdf/embed-pdf-viewer reference library.
+    const merged = _mergeHighlightRects(rects);
 
     // clear selection for a "Kindle" feel
     try { sel.removeAllRanges(); } catch {}
@@ -490,9 +489,63 @@ export class PdfViewer{
     return {
       id: uid("hl"),
       pageIndex,
-      rects,
+      rects: merged,
       text: text.slice(0, 320),
       createdAt: Date.now()
     };
   }
+}
+
+/**
+ * Merge a list of normalised highlight rects (0..1 relative to the page
+ * surface) into one rect per visual line.
+ *
+ * Two rects are considered to be on the same line when their vertical overlap
+ * is >= 50 % of their union height, and they are horizontally adjacent (gap
+ * smaller than half a line height).  Inspired by Chromium's MergeAdjacentRects
+ * in pdfium_range.cc and the embedpdf/embed-pdf-viewer selection utilities.
+ *
+ * @param {Array<{x:number,y:number,w:number,h:number}>} rects
+ * @returns {Array<{x:number,y:number,w:number,h:number}>}
+ */
+function _mergeHighlightRects(rects) {
+  if (rects.length <= 1) return rects;
+
+  // Sort top-to-bottom, then left-to-right.
+  const sorted = [...rects].sort((a, b) => a.y !== b.y ? a.y - b.y : a.x - b.x);
+
+  const out = [];
+  let cur = { ...sorted[0] };
+
+  for (let i = 1; i < sorted.length; i++) {
+    const r = sorted[i];
+
+    const curBottom = cur.y + cur.h;
+    const rBottom   = r.y  + r.h;
+    const overlapTop    = Math.max(cur.y, r.y);
+    const overlapBottom = Math.min(curBottom, rBottom);
+    const overlap  = overlapBottom - overlapTop;
+    const unionH   = Math.max(curBottom, rBottom) - Math.min(cur.y, r.y);
+    const vertOverlap = unionH > 0 ? overlap / unionH : 0;
+
+    // Horizontal gap between the two rects (negative means they overlap).
+    const hGap = r.x - (cur.x + cur.w);
+
+    // Same visual line: significant vertical overlap + rects are adjacent.
+    // Use 1.5× the current line height as the max allowed horizontal gap –
+    // this is wide enough to bridge inter-word spaces (typically ≤ 0.5×
+    // line height) while staying narrower than typical column gutters.
+    if (vertOverlap >= 0.5 && hGap < cur.h * 1.5) {
+      const newLeft  = Math.min(cur.x, r.x);
+      const newRight = Math.max(cur.x + cur.w, r.x + r.w);
+      const newTop   = Math.min(cur.y, r.y);
+      const newBot   = Math.max(curBottom, rBottom);
+      cur = { x: newLeft, y: newTop, w: newRight - newLeft, h: newBot - newTop };
+    } else {
+      out.push(cur);
+      cur = { ...r };
+    }
+  }
+  out.push(cur);
+  return out;
 }
