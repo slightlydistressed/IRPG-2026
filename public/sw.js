@@ -1,4 +1,4 @@
-const CACHE_NAME = "irpg-2026-v1";
+const CACHE_NAME = "irpg-2026-v2";
 const APP_BASE = "/IRPG-2026";
 
 const PRECACHE_URLS = [
