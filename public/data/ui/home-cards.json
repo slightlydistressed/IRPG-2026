@@ -1,0 +1,26 @@
+[
+  {
+    "id": "open-manual",
+    "title": "Open Manual",
+    "description": "Read the IRPG PDF and jump through contents.",
+    "href": "/IRPG-2026/manual.html"
+  },
+  {
+    "id": "open-checklists",
+    "title": "Open Checklists",
+    "description": "View and complete available checklists.",
+    "href": "/IRPG-2026/checklists.html"
+  },
+  {
+    "id": "open-saved",
+    "title": "Saved Items",
+    "description": "Review bookmarks, highlights, and recent work.",
+    "href": "/IRPG-2026/saved.html"
+  },
+  {
+    "id": "open-settings",
+    "title": "Settings",
+    "description": "Offline status, theme, import, and export.",
+    "href": "/IRPG-2026/settings.html"
+  }
+]
