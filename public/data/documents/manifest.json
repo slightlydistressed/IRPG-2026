@@ -1,0 +1,30 @@
+{
+  "version": "1.0.0",
+  "updatedAt": "2026-03-25T00:00:00Z",
+  "documents": [
+    {
+      "id": "irpg-2026",
+      "title": "IRPG 2026",
+      "shortTitle": "IRPG",
+      "description": "Incident Response Pocket Guide offline manual.",
+      "source": {
+        "type": "pdf",
+        "file": "/IRPG-2026/pdf/pms461.pdf"
+      },
+      "toc": {
+        "file": "/IRPG-2026/data/toc/irpg-toc.json"
+      },
+      "checklists": {
+        "indexFile": "/IRPG-2026/data/checklists/index.json"
+      },
+      "defaultPage": 1,
+      "features": {
+        "bookmarks": true,
+        "highlights": true,
+        "checklists": true,
+        "offline": true,
+        "importExport": true
+      }
+    }
+  ]
+}
