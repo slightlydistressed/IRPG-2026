@@ -6,7 +6,10 @@ import "../styles/theme.css";
 import "../styles/saved.css";
 import { SavedPage } from "../pages/SavedPage";
 import { registerServiceWorker } from "../lib/registerSW";
+import { applyTheme, watchSystemTheme } from "../lib/theme";
 
+applyTheme();
+watchSystemTheme();
 registerServiceWorker();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

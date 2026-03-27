@@ -1,23 +1,109 @@
+/* ── Light theme (default) ───────────────────────────────────────────────── */
+:root,
+[data-theme="light"] {
+  --bg: #f4f6f9;
+  --panel: #ffffff;
+  --text: #1a2236;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --accent: #1a6644;
+  --accent-hover: #155536;
+  --accent-soft: #eaf5ee;
+  --accent-muted: #c6e6d3;
+  --danger: #c0392b;
+  --danger-soft: #fef2f2;
+  --danger-border: #fecaca;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --radius-xs: 6px;
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 4px 12px rgba(15, 23, 42, 0.06);
+  --shadow-hover: 0 4px 12px rgba(15, 23, 42, 0.1), 0 12px 28px rgba(15, 23, 42, 0.1);
+  --transition: 140ms cubic-bezier(0.4, 0, 0.2, 1);
+  --font: "Inter", system-ui, sans-serif;
+  color-scheme: light;
+}
+
+/* ── Dark theme ──────────────────────────────────────────────────────────── */
+[data-theme="dark"] {
+  --bg: #0e1117;
+  --panel: #181c27;
+  --text: #e2e8f0;
+  --muted: #8fa0b8;
+  --border: #2a3145;
+  --accent: #38b272;
+  --accent-hover: #2f9962;
+  --accent-soft: #172a22;
+  --accent-muted: #1f3d2e;
+  --danger: #ef4444;
+  --danger-soft: #2c1515;
+  --danger-border: #7f1d1d;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.25), 0 4px 12px rgba(0, 0, 0, 0.2);
+  --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.35), 0 12px 28px rgba(0, 0, 0, 0.3);
+  color-scheme: dark;
+}
+
+/* ── Status pill ─────────────────────────────────────────────────────────── */
 .status-pill {
   display: inline-flex;
   align-items: center;
+  gap: 0.35rem;
   border-radius: 999px;
-  padding: 0.35rem 0.7rem;
-  font-size: 0.85rem;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
   border: 1px solid var(--border);
-  background: #f8fafc;
+  background: var(--panel);
+  color: var(--muted);
+  transition: background var(--transition), color var(--transition);
+}
+.status-pill::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.7;
 }
 .status-pill--good {
   background: var(--accent-soft);
   color: var(--accent);
-  border-color: #b8dec8;
+  border-color: var(--accent-muted);
 }
 .status-pill--danger {
-  background: #fef3f2;
+  background: var(--danger-soft);
   color: var(--danger);
-  border-color: #fecdca;
+  border-color: var(--danger-border);
 }
+
+/* ── Empty state ─────────────────────────────────────────────────────────── */
 .empty-state {
-  padding: 1.5rem;
+  padding: 3rem 1.5rem;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
 }
+.empty-state__icon {
+  width: 48px;
+  height: 48px;
+  color: var(--muted);
+  opacity: 0.5;
+  margin-bottom: 0.25rem;
+}
+.empty-state h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.empty-state p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+

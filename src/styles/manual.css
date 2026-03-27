@@ -1,7 +1,38 @@
 .toc-list {
-  margin: 0;
-  padding-left: 1rem;
+  margin: 0.5rem 0 0;
+  padding-left: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.2rem;
+}
+.toc-list > li > strong {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  padding: 0.65rem 0.5rem 0.3rem;
+}
+.toc-list > li > ul.toc-list__children {
+  padding-left: 0.5rem;
+}
+.toc-list li {
+  font-size: 0.875rem;
+}
+.toc-list a {
+  display: block;
+  padding: 0.35rem 0.5rem;
+  border-radius: var(--radius-xs);
+  color: var(--text);
+  transition: background var(--transition), color var(--transition);
+}
+.toc-list a:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 .toc-list__children {
-  margin-top: 0.35rem;
+  margin-top: 0.2rem;
+  padding-left: 0.75rem;
 }
+
