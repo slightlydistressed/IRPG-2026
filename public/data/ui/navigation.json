@@ -1,0 +1,7 @@
+[
+  { "id": "home", "label": "Home", "href": "/IRPG-2026/" },
+  { "id": "manual", "label": "Manual", "href": "/IRPG-2026/manual.html" },
+  { "id": "checklists", "label": "Checklists", "href": "/IRPG-2026/checklists.html" },
+  { "id": "saved", "label": "Saved", "href": "/IRPG-2026/saved.html" },
+  { "id": "settings", "label": "Settings", "href": "/IRPG-2026/settings.html" }
+]
