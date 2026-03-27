@@ -1,0 +1,75 @@
+{
+  "documentId": "irpg-2026",
+  "title": "IRPG 2026 Table of Contents",
+  "version": "1.0.0",
+  "items": [
+    {
+      "id": "preliminaries",
+      "title": "Preliminaries",
+      "kind": "section",
+      "children": [
+        {
+          "id": "cover",
+          "title": "Cover",
+          "kind": "entry",
+          "page": { "pageNumber": 1, "pageLabel": "Cover" }
+        },
+        {
+          "id": "watch-out-situations",
+          "title": "18 Watch Out Situations",
+          "kind": "entry",
+          "page": { "pageNumber": 2 }
+        },
+        {
+          "id": "10-standard-firefighting-orders",
+          "title": "10 Standard Firefighting Orders",
+          "kind": "entry",
+          "page": { "pageNumber": 3 }
+        }
+      ]
+    },
+    {
+      "id": "checklists",
+      "title": "Checklists",
+      "kind": "section",
+      "children": [
+        {
+          "id": "size-up-link",
+          "title": "Size-Up Report",
+          "kind": "checklist-link",
+          "checklistId": "size-up-report"
+        },
+        {
+          "id": "risk-management-link",
+          "title": "Risk Management Process",
+          "kind": "checklist-link",
+          "checklistId": "risk-management-process"
+        },
+        {
+          "id": "lces-link",
+          "title": "LCES",
+          "kind": "checklist-link",
+          "checklistId": "lces"
+        },
+        {
+          "id": "downhill-link",
+          "title": "Downhill Fireline Checklist",
+          "kind": "checklist-link",
+          "checklistId": "downhill-fireline-checklist"
+        },
+        {
+          "id": "weather-link",
+          "title": "Weather",
+          "kind": "checklist-link",
+          "checklistId": "weather"
+        },
+        {
+          "id": "medical-8line-link",
+          "title": "Medical Incident Report (8-Line)",
+          "kind": "checklist-link",
+          "checklistId": "medical-8line"
+        }
+      ]
+    }
+  ]
+}
