@@ -14,19 +14,24 @@ export function getDraftByChecklistId(id: string): ChecklistDraft | undefined {
 export function saveDraft(definition: ChecklistDefinition, answers: ChecklistAnswers): ChecklistDraft {
   const drafts = getDrafts();
   const existing = drafts.find((item) => item.checklistId === definition.id);
-  const next: ChecklistDraft = existing ?? {
-    id: uid("draft"),
-    checklistId: definition.id,
-    answers: {},
-    meta: {
-      checklistId: definition.id,
-      title: definition.title,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
-  };
-  next.answers = answers;
-  next.meta.updatedAt = new Date().toISOString();
+  const now = new Date().toISOString();
+  const next: ChecklistDraft = existing
+    ? {
+        ...existing,
+        answers,
+        meta: { ...existing.meta, updatedAt: now }
+      }
+    : {
+        id: uid("draft"),
+        checklistId: definition.id,
+        answers,
+        meta: {
+          checklistId: definition.id,
+          title: definition.title,
+          createdAt: now,
+          updatedAt: now
+        }
+      };
   const updated = drafts.filter((item) => item.id !== next.id).concat(next);
   setStored(STORAGE_KEYS.drafts, updated);
   return next;

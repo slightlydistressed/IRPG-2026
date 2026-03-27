@@ -18,6 +18,10 @@ export function ManualPage(): JSX.Element {
   }, []);
 
   const source: PdfDocumentSource = { id: "irpg", title: "IRPG Manual", url: withBasePath("pdf/pms461.pdf") };
+  const initialPage = (() => {
+    const p = Number(new URLSearchParams(window.location.search).get("page"));
+    return Number.isInteger(p) && p > 0 ? p : 1;
+  })();
 
   return (
     <AppShell title="Manual" subtitle="PDF reader and contents">
@@ -27,6 +31,7 @@ export function ManualPage(): JSX.Element {
           source={source}
           bookmarks={bookmarks}
           highlights={getHighlights()}
+          initialPage={initialPage}
           onAddBookmark={(bookmark) => {
             const next = [...bookmarks, bookmark];
             setBookmarks(next);

@@ -10,7 +10,8 @@ export function SideNav({ currentPath }: Props): JSX.Element {
       <div className="side-nav__title">IRPG 2026</div>
       <ul>
         {NAV_ITEMS.map((item) => {
-          const active = currentPath.includes(item.href.replace(".html", ""));
+          const normalized = item.href.replace(/index\.html$/, "");
+          const active = currentPath === item.href || currentPath === normalized;
           return (
             <li key={item.id}>
               <a className={active ? "active" : ""} href={item.href}>
