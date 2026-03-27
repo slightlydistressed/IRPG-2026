@@ -12,10 +12,11 @@ interface Props {
   bookmarks?: BookmarkRecord[];
   highlights?: HighlightRecord[];
   onAddBookmark?: (bookmark: BookmarkRecord) => void;
+  initialPage?: number;
 }
 
-export function PdfReader({ source, bookmarks = [], highlights = [], onAddBookmark }: Props): JSX.Element {
-  const [pageNumber, setPageNumber] = useState(1);
+export function PdfReader({ source, bookmarks = [], highlights = [], onAddBookmark, initialPage = 1 }: Props): JSX.Element {
+  const [pageNumber, setPageNumber] = useState(initialPage);
   const pageBookmarks = useMemo(
     () => bookmarks.filter((item) => item.pageNumber === pageNumber),
     [bookmarks, pageNumber]

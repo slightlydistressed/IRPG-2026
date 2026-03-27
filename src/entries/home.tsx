@@ -4,6 +4,9 @@ import "../styles/app.css";
 import "../styles/layout.css";
 import "../styles/theme.css";
 import { HomePage } from "../pages/HomePage";
+import { registerServiceWorker } from "../lib/registerSW";
+
+registerServiceWorker();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

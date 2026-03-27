@@ -45,13 +45,22 @@ export function ChecklistForm({ definition, answers, onChange }: Props): JSX.Ele
       <h2>{definition.title}</h2>
       {definition.description ? <p className="subtle-text">{definition.description}</p> : null}
       <div className="checklist-fields">
-        {fields.map((field) => (
-          <label className="checklist-field" key={field.id} htmlFor={field.id}>
-            <span>{field.label}</span>
-            <FieldControl field={field} value={answers[field.id]} onChange={(value) => onChange(field.id, value)} />
-            {field.helpText ? <small>{field.helpText}</small> : null}
-          </label>
-        ))}
+        {fields.map((field) => {
+          if (field.type === "heading" || field.type === "note") {
+            return (
+              <div key={field.id}>
+                <FieldControl field={field} value={answers[field.id]} onChange={(value) => onChange(field.id, value)} />
+              </div>
+            );
+          }
+          return (
+            <label className="checklist-field" key={field.id} htmlFor={field.id}>
+              <span>{field.label}</span>
+              <FieldControl field={field} value={answers[field.id]} onChange={(value) => onChange(field.id, value)} />
+              {field.helpText ? <small>{field.helpText}</small> : null}
+            </label>
+          );
+        })}
       </div>
     </div>
   );

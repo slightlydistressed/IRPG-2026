@@ -5,6 +5,9 @@ import "../styles/layout.css";
 import "../styles/theme.css";
 import "../styles/checklists.css";
 import { ChecklistsPage } from "../pages/ChecklistsPage";
+import { registerServiceWorker } from "../lib/registerSW";
+
+registerServiceWorker();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
