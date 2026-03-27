@@ -1,1 +1,9 @@
-/* Saved page specific styles */
+/* ── Saved page ──────────────────────────────────────────────────────────── */
+.saved-section h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+

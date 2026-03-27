@@ -6,7 +6,10 @@ import "../styles/theme.css";
 import "../styles/checklists.css";
 import { ChecklistsPage } from "../pages/ChecklistsPage";
 import { registerServiceWorker } from "../lib/registerSW";
+import { applyTheme, watchSystemTheme } from "../lib/theme";
 
+applyTheme();
+watchSystemTheme();
 registerServiceWorker();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

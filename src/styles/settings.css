@@ -1,1 +1,38 @@
-/* Settings page specific styles */
+/* ── Settings page ───────────────────────────────────────────────────────── */
+.settings-section {
+  padding: 1.25rem;
+}
+.settings-section h2 {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.settings-row:last-child { border-bottom: none; }
+.settings-row label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text);
+}
+.settings-row select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: border-color var(--transition);
+}
+.settings-row select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+

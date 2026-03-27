@@ -1,8 +1,23 @@
 .pdf-reader { display: grid; gap: 1rem; }
 .pdf-toolbar {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.5rem;
   align-items: center;
+  padding: 0.75rem 1rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+.pdf-toolbar__page {
+  flex: 1;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+.pdf-toolbar__page strong {
+  color: var(--text);
+  font-weight: 600;
 }
 .pdf-stage {
   position: relative;
@@ -10,7 +25,8 @@
   overflow: hidden;
   border-radius: var(--radius);
   border: 1px solid var(--border);
-  background: #cfd7df;
+  background: var(--bg);
+  box-shadow: var(--shadow);
 }
 .pdf-frame {
   width: 100%;
@@ -26,5 +42,7 @@
 }
 .pdf-highlight-rect {
   position: absolute;
-  border-radius: 4px;
+  border-radius: 3px;
+  mix-blend-mode: multiply;
 }
+
