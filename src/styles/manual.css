@@ -1,0 +1,7 @@
+.toc-list {
+  margin: 0;
+  padding-left: 1rem;
+}
+.toc-list__children {
+  margin-top: 0.35rem;
+}
