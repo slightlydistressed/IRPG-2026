@@ -1,0 +1,17 @@
+{
+  "id": "lces",
+  "title": "LCES",
+  "category": "Safety",
+  "sections": [
+    {
+      "id": "lces-core",
+      "title": "LCES",
+      "fields": [
+        { "id": "lookouts", "type": "textarea", "label": "Lookouts" },
+        { "id": "communications", "type": "textarea", "label": "Communications" },
+        { "id": "escape-routes", "type": "textarea", "label": "Escape Routes" },
+        { "id": "safety-zones", "type": "textarea", "label": "Safety Zones" }
+      ]
+    }
+  ]
+}

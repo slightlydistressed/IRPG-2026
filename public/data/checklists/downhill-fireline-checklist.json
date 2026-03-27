@@ -1,0 +1,18 @@
+{
+  "id": "downhill-fireline-checklist",
+  "title": "Downhill Fireline Checklist",
+  "category": "Safety",
+  "sections": [
+    {
+      "id": "downhill",
+      "title": "Downhill Fireline",
+      "fields": [
+        { "id": "anchor-point", "type": "checkbox", "label": "An anchor point is established" },
+        { "id": "communications", "type": "checkbox", "label": "Communications are in place" },
+        { "id": "safety-zones", "type": "checkbox", "label": "Safety zones are identified" },
+        { "id": "weather", "type": "checkbox", "label": "Weather and fire behavior evaluated" },
+        { "id": "notes", "type": "textarea", "label": "Notes" }
+      ]
+    }
+  ]
+}

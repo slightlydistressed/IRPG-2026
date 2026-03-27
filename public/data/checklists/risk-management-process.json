@@ -1,0 +1,36 @@
+{
+  "id": "risk-management-process",
+  "title": "Risk Management Process",
+  "category": "Operations",
+  "sections": [
+    {
+      "id": "step-1",
+      "title": "Step 1: Situational Awareness",
+      "fields": [
+        { "id": "objectives", "type": "textarea", "label": "Objectives" },
+        { "id": "conditions", "type": "textarea", "label": "Current Conditions" }
+      ]
+    },
+    {
+      "id": "step-2",
+      "title": "Step 2: Hazard Assessment",
+      "fields": [
+        { "id": "hazard-list", "type": "textarea", "label": "Hazards Identified" },
+        { "id": "risk-level", "type": "select", "label": "Overall Risk Level", "options": [
+          { "label": "Low", "value": "low" },
+          { "label": "Moderate", "value": "moderate" },
+          { "label": "High", "value": "high" },
+          { "label": "Extreme", "value": "extreme" }
+        ] }
+      ]
+    },
+    {
+      "id": "step-3",
+      "title": "Step 3: Controls",
+      "fields": [
+        { "id": "controls", "type": "textarea", "label": "Controls / Mitigations" },
+        { "id": "decision", "type": "textarea", "label": "Go / No-Go Decision Notes" }
+      ]
+    }
+  ]
+}

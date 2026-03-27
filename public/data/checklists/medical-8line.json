@@ -1,0 +1,21 @@
+{
+  "id": "medical-8line",
+  "title": "Medical Incident Report (8-Line)",
+  "category": "Medical",
+  "sections": [
+    {
+      "id": "eight-line",
+      "title": "Medical 8-Line",
+      "fields": [
+        { "id": "line-1", "type": "textarea", "label": "1. Incident Name" },
+        { "id": "line-2", "type": "textarea", "label": "2. Contact / Radio Frequency" },
+        { "id": "line-3", "type": "textarea", "label": "3. Patient Status" },
+        { "id": "line-4", "type": "textarea", "label": "4. Number of Patients" },
+        { "id": "line-5", "type": "textarea", "label": "5. Location" },
+        { "id": "line-6", "type": "textarea", "label": "6. Terrain / Access" },
+        { "id": "line-7", "type": "textarea", "label": "7. Resources Needed" },
+        { "id": "line-8", "type": "textarea", "label": "8. Additional Notes" }
+      ]
+    }
+  ]
+}

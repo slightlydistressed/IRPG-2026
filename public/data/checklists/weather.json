@@ -1,0 +1,20 @@
+{
+  "id": "weather",
+  "title": "Weather",
+  "category": "Environment",
+  "sections": [
+    {
+      "id": "weather-observation",
+      "title": "Weather Observation",
+      "fields": [
+        { "id": "obs-date", "type": "date", "label": "Observation Date", "action": { "type": "set-current-date", "label": "Set" } },
+        { "id": "obs-time", "type": "time", "label": "Observation Time", "action": { "type": "set-current-time", "label": "Set" } },
+        { "id": "gps", "type": "gps", "label": "GPS Coordinates", "action": { "type": "set-gps", "label": "Set" } },
+        { "id": "temperature", "type": "text", "label": "Temperature" },
+        { "id": "relative-humidity", "type": "text", "label": "Relative Humidity" },
+        { "id": "wind", "type": "text", "label": "Wind" },
+        { "id": "sky", "type": "textarea", "label": "Sky / Weather Notes" }
+      ]
+    }
+  ]
+}

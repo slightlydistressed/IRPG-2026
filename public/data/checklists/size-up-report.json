@@ -1,0 +1,27 @@
+{
+  "id": "size-up-report",
+  "title": "Size-Up Report",
+  "category": "Operations",
+  "sections": [
+    {
+      "id": "incident",
+      "title": "Incident Information",
+      "fields": [
+        { "id": "incident-name", "type": "text", "label": "Incident Name" },
+        { "id": "date", "type": "date", "label": "Date", "action": { "type": "set-current-date", "label": "Set" } },
+        { "id": "time", "type": "time", "label": "Time", "action": { "type": "set-current-time", "label": "Set" } },
+        { "id": "location", "type": "textarea", "label": "Location" }
+      ]
+    },
+    {
+      "id": "size-up",
+      "title": "Size-Up",
+      "fields": [
+        { "id": "situation", "type": "textarea", "label": "Current Situation" },
+        { "id": "hazards", "type": "textarea", "label": "Hazards" },
+        { "id": "resources", "type": "textarea", "label": "Resources Committed" },
+        { "id": "actions", "type": "textarea", "label": "Planned Actions" }
+      ]
+    }
+  ]
+}

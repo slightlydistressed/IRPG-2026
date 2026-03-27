@@ -1,0 +1,48 @@
+{
+  "version": "1.0.0",
+  "updatedAt": "2026-03-25T00:00:00Z",
+  "items": [
+    {
+      "id": "size-up-report",
+      "title": "Size-Up Report",
+      "category": "Operations",
+      "description": "Initial incident size-up worksheet.",
+      "file": "/IRPG-2026/data/checklists/size-up-report.json"
+    },
+    {
+      "id": "risk-management-process",
+      "title": "Risk Management Process",
+      "category": "Operations",
+      "description": "Hazard and control worksheet.",
+      "file": "/IRPG-2026/data/checklists/risk-management-process.json"
+    },
+    {
+      "id": "lces",
+      "title": "LCES",
+      "category": "Safety",
+      "description": "Lookouts, Communications, Escape Routes, Safety Zones.",
+      "file": "/IRPG-2026/data/checklists/lces.json"
+    },
+    {
+      "id": "downhill-fireline-checklist",
+      "title": "Downhill Fireline Checklist",
+      "category": "Safety",
+      "description": "Downhill line construction risk checklist.",
+      "file": "/IRPG-2026/data/checklists/downhill-fireline-checklist.json"
+    },
+    {
+      "id": "weather",
+      "title": "Weather",
+      "category": "Environment",
+      "description": "Weather observation and capture worksheet.",
+      "file": "/IRPG-2026/data/checklists/weather.json"
+    },
+    {
+      "id": "medical-8line",
+      "title": "Medical Incident Report (8-Line)",
+      "category": "Medical",
+      "description": "Medical emergency reporting worksheet.",
+      "file": "/IRPG-2026/data/checklists/medical-8line.json"
+    }
+  ]
+}
